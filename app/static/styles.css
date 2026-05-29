@@ -84,3 +84,41 @@ td img {
 .team-card {
     overflow: hidden;
 }
+
+/* Corrección fuerte para logos de equipos */
+img[src*="supabase"],
+img[src*="team-logos"],
+img[src*="storage"],
+.team-card img,
+.card img,
+.team-item img,
+.team-logo,
+.logo-equipo,
+#teamsContainer img,
+#teams-list img,
+#teams img {
+    width: 70px !important;
+    height: 70px !important;
+    max-width: 70px !important;
+    max-height: 70px !important;
+    object-fit: contain !important;
+    border-radius: 12px !important;
+    display: block !important;
+}
+
+/* Para logo dentro de tablas */
+table img,
+td img {
+    width: 50px !important;
+    height: 50px !important;
+    max-width: 50px !important;
+    max-height: 50px !important;
+    object-fit: contain !important;
+}
+
+/* Evita que la tarjeta crezca por culpa de la imagen */
+.team-card,
+.card,
+.team-item {
+    overflow: hidden !important;
+}
