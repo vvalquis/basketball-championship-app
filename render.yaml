@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: basketball-championship-supabase
+    env: python
+    plan: free
+    buildCommand: "echo Sin dependencias externas"
+    startCommand: "python run.py"
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

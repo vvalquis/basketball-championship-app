@@ -1,0 +1,2 @@
+# Esta versión usa solo librerías estándar de Python.
+# No requiere pip install para ejecutar localmente.
