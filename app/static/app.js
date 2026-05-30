@@ -6,9 +6,7 @@ async function api(path, options = {}) {
     ...options,
   });
   const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || 'Error consultando API');
-  }
+  if (!response.ok) throw new Error(data.error || 'Error consultando API');
   return data;
 }
 
@@ -28,89 +26,68 @@ function showError(containerId, error) {
 
 function teamLogo(team) {
   const name = escapeHtml(team?.name || 'Equipo');
-  return `<div class="team-logo">${team?.logo_url ? `<img src="${escapeHtml(team.logo_url)}" alt="Logo ${name}" loading="lazy" />` : '🏀'}</div>`;
+  return `<div class="team-logo" aria-label="Logo ${name}">${team?.logo_url ? `<img src="${escapeHtml(team.logo_url)}" alt="${name}">` : '🏀'}</div>`;
 }
 
-function navigateToSection(targetId, options = {}) {
+function openMenu() {
+  document.body.classList.add('menu-open');
+  document.getElementById('menuToggle')?.setAttribute('aria-expanded', 'true');
+  document.getElementById('menuOverlay')?.setAttribute('aria-hidden', 'false');
+}
+
+function closeMenu() {
+  document.body.classList.remove('menu-open');
+  document.getElementById('menuToggle')?.setAttribute('aria-expanded', 'false');
+  document.getElementById('menuOverlay')?.setAttribute('aria-hidden', 'true');
+}
+
+function expandSection(section) {
+  if (!section || !section.classList.contains('section-collapsed')) return;
+  section.classList.remove('section-collapsed');
+  const button = section.querySelector('.section-toggle');
+  const icon = button?.querySelector('.toggle-icon');
+  button?.setAttribute('aria-expanded', 'true');
+  button?.setAttribute('aria-label', 'Contraer sección');
+  button?.setAttribute('title', 'Contraer sección');
+  if (icon) icon.textContent = '⌃';
+}
+
+function navigateToSection(targetId) {
   const id = String(targetId || '').replace('#', '');
   const target = document.getElementById(id);
-  if (!target) return false;
+  if (!target) return;
 
-  if (target.classList.contains('section-collapsible') && target.classList.contains('section-collapsed')) {
-    target.classList.remove('section-collapsed');
-    const button = target.querySelector('.section-toggle');
-    const icon = button?.querySelector('.toggle-icon');
-    button?.setAttribute('aria-expanded', 'true');
-    button?.setAttribute('aria-label', 'Contraer sección');
-    button?.setAttribute('title', 'Contraer sección');
-    if (icon) icon.textContent = '⌃';
-  }
+  expandSection(target);
+  closeMenu();
 
-  const offset = options.offset ?? 92;
-  const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - offset);
-  window.scrollTo({ top, behavior: options.behavior || 'smooth' });
-
-  if (history.replaceState) {
+  window.setTimeout(() => {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     history.replaceState(null, '', `#${id}`);
-  } else {
-    window.location.hash = id;
-  }
-
-  document.querySelectorAll('.main-nav a').forEach((link) => {
-    link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
-  });
-
-  return true;
+    document.querySelectorAll('.main-nav a').forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+    });
+  }, 150);
 }
 
-function setupResponsiveMenu() {
-  const body = document.body;
-  const menuButton = document.getElementById('mobileMenuBtn');
-  const closeButton = document.getElementById('closeMenuBtn');
-  const overlay = document.getElementById('menuOverlay');
-  const nav = document.getElementById('mainNav');
-
-  const openMenu = () => {
-    body.classList.add('menu-open');
-    menuButton?.setAttribute('aria-expanded', 'true');
-    overlay?.setAttribute('aria-hidden', 'false');
-  };
-
-  const closeMenu = () => {
-    body.classList.remove('menu-open');
-    menuButton?.setAttribute('aria-expanded', 'false');
-    overlay?.setAttribute('aria-hidden', 'true');
-  };
-
-  menuButton?.addEventListener('click', (event) => {
+function setupMenu() {
+  document.getElementById('menuToggle')?.addEventListener('click', (event) => {
     event.preventDefault();
-    event.stopPropagation();
-    if (body.classList.contains('menu-open')) closeMenu();
-    else openMenu();
+    document.body.classList.contains('menu-open') ? closeMenu() : openMenu();
   });
 
-  closeButton?.addEventListener('click', (event) => {
+  document.getElementById('closeMenu')?.addEventListener('click', (event) => {
     event.preventDefault();
-    event.stopPropagation();
     closeMenu();
   });
 
-  overlay?.addEventListener('click', closeMenu);
+  document.getElementById('menuOverlay')?.addEventListener('click', closeMenu);
 
-  nav?.addEventListener('click', (event) => {
-    const link = event.target.closest('a[href^="#"]');
-    if (!link) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    const targetId = link.getAttribute('href');
-    closeMenu();
-
-    // Primero se cierra el menú y se quita overflow:hidden; luego se hace el scroll.
-    window.setTimeout(() => {
-      navigateToSection(targetId, { offset: 92, behavior: 'smooth' });
-    }, 80);
+  document.querySelectorAll('.main-nav a[href^="#"]').forEach(link => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      const targetId = link.getAttribute('href');
+      navigateToSection(targetId);
+    });
   });
 
   document.addEventListener('keydown', (event) => {
@@ -122,12 +99,11 @@ function setupResponsiveMenu() {
 }
 
 function setupSectionToggles() {
-  document.querySelectorAll('.section-collapsible').forEach((section) => {
+  document.querySelectorAll('.section-collapsible').forEach(section => {
     const button = section.querySelector('.section-toggle');
-    const content = section.querySelector('.section-content');
-    if (!button || !content) return;
+    const icon = button?.querySelector('.toggle-icon');
+    if (!button || !icon) return;
 
-    const icon = button.querySelector('.toggle-icon') || button;
     button.addEventListener('click', () => {
       const collapsed = section.classList.toggle('section-collapsed');
       button.setAttribute('aria-expanded', String(!collapsed));
@@ -143,7 +119,6 @@ function closeMatchDetail() {
   if (!modal) return;
   modal.classList.remove('modal-open');
   modal.setAttribute('aria-hidden', 'true');
-  document.body.classList.remove('modal-is-open');
 }
 
 function periodLabel(number) {
@@ -162,8 +137,7 @@ async function openMatchDetail(matchId) {
 
   modal.classList.add('modal-open');
   modal.setAttribute('aria-hidden', 'false');
-  document.body.classList.add('modal-is-open');
-  content.innerHTML = '<div class="loading-detail">Cargando detalle del partido...</div>';
+  content.innerHTML = '<p>Cargando detalle del partido...</p>';
 
   try {
     const match = await api(`/api/matches/${matchId}`);
@@ -172,57 +146,31 @@ async function openMatchDetail(matchId) {
     const periods = Array.isArray(match.periods) ? match.periods : [];
     const playerStats = Array.isArray(match.player_stats) ? match.player_stats : [];
 
-    const periodsHtml = periods.length ? periods.map(period => `
-      <tr>
-        <td>${periodLabel(period.period_number)}</td>
-        <td>${period.home_score ?? 0}</td>
-        <td>${period.away_score ?? 0}</td>
-      </tr>
-    `).join('') : '<tr><td colspan="3">Aún no hay resultados por tiempo registrados.</td></tr>';
+    const periodsHtml = periods.length
+      ? `<div class="period-grid">${periods.map(period => `<div class="period-row"><strong>${periodLabel(period.period_number)}</strong><span>${period.home_score ?? 0}</span><span>${period.away_score ?? 0}</span></div>`).join('')}</div>`
+      : '<p>Aún no hay resultados por tiempo registrados.</p>';
 
-    const statsHtml = playerStats.length ? playerStats.map(row => {
-      const player = row.players || {};
-      const team = row.teams || {};
-      return `
-        <tr>
-          <td>#${escapeHtml(player.jersey_number || '-')} ${escapeHtml(player.first_name || '')} ${escapeHtml(player.last_name || '')}</td>
-          <td>${escapeHtml(team.name || '-')}</td>
-          <td>${row.points ?? 0}</td>
-          <td>${row.rebounds ?? 0}</td>
-          <td>${row.assists ?? 0}</td>
-          <td>${row.fouls ?? 0}</td>
-        </tr>
-      `;
-    }).join('') : '<tr><td colspan="6">Aún no hay estadísticas individuales registradas.</td></tr>';
+    const statsHtml = playerStats.length
+      ? `<div class="table-wrap"><table><thead><tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>REB</th><th>AST</th><th>FALTAS</th></tr></thead><tbody>${playerStats.map(row => {
+          const player = row.players || {};
+          const team = row.teams || {};
+          return `<tr><td>#${escapeHtml(player.jersey_number || '-')} ${escapeHtml(player.first_name || '')} ${escapeHtml(player.last_name || '')}</td><td>${escapeHtml(team.name || '-')}</td><td>${row.points ?? 0}</td><td>${row.rebounds ?? 0}</td><td>${row.assists ?? 0}</td><td>${row.fouls ?? 0}</td></tr>`;
+        }).join('')}</tbody></table></div>`
+      : '<p>Aún no hay estadísticas individuales registradas.</p>';
 
     content.innerHTML = `
-      <div class="modal-header-block">
-        <span class="badge">${escapeHtml(match.status || '')}</span>
-        <h2 id="matchDetailTitle">${homeName} vs ${awayName}</h2>
-        <p>${escapeHtml(match.match_date || '')} ${escapeHtml(match.match_time || '')} · ${escapeHtml(match.venue || '')}</p>
+      <span class="badge">${escapeHtml(match.status || '')}</span>
+      <h2>${homeName} vs ${awayName}</h2>
+      <p>${escapeHtml(match.match_date || '')} ${escapeHtml(match.match_time || '')} · ${escapeHtml(match.venue || '')}</p>
+      <div class="modal-scoreboard">
+        <div class="score-box">${homeName}<strong>${match.home_score ?? 0}</strong></div>
+        <div class="score">VS</div>
+        <div class="score-box">${awayName}<strong>${match.away_score ?? 0}</strong></div>
       </div>
-
-      <div class="detail-scoreboard">
-        <div><strong>${homeName}</strong><span>${match.home_score ?? 0}</span></div>
-        <div class="detail-vs">VS</div>
-        <div><strong>${awayName}</strong><span>${match.away_score ?? 0}</span></div>
-      </div>
-
       <h3>Resultados por tiempo</h3>
-      <div class="table-wrap detail-table-wrap">
-        <table>
-          <thead><tr><th>Tiempo</th><th>${homeName}</th><th>${awayName}</th></tr></thead>
-          <tbody>${periodsHtml}</tbody>
-        </table>
-      </div>
-
+      ${periodsHtml}
       <h3>Estadísticas de jugadores</h3>
-      <div class="table-wrap detail-table-wrap">
-        <table>
-          <thead><tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>REB</th><th>AST</th><th>FALTAS</th></tr></thead>
-          <tbody>${statsHtml}</tbody>
-        </table>
-      </div>
+      ${statsHtml}
     `;
   } catch (error) {
     content.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
@@ -230,9 +178,7 @@ async function openMatchDetail(matchId) {
 }
 
 function setupMatchDetailModal() {
-  document.querySelectorAll('[data-close-match-detail]').forEach((el) => {
-    el.addEventListener('click', closeMatchDetail);
-  });
+  document.querySelectorAll('[data-close-match-detail]').forEach(el => el.addEventListener('click', closeMatchDetail));
 }
 
 async function loadSummary() {
@@ -251,33 +197,15 @@ async function loadTeams() {
   try {
     const teams = await api(`/api/teams?championship_id=${CHAMPIONSHIP_ID}`);
     document.getElementById('teamsContainer').innerHTML = teams.map(team => `
-      <article class="card team-card">
-        ${teamLogo(team)}
-        <h3>${escapeHtml(team.name)}</h3>
-        <p>Head coach: ${escapeHtml(team.coach_name || 'No registrado')}</p>
-        <span class="badge">${escapeHtml(team.status || 'ACTIVE')}</span>
-      </article>
+      <article class="card team-card">${teamLogo(team)}<h3>${escapeHtml(team.name)}</h3><p>Head coach: ${escapeHtml(team.coach_name || 'No registrado')}</p><span class="badge">${escapeHtml(team.status || 'ACTIVE')}</span></article>
     `).join('') || '<p>No hay equipos registrados.</p>';
-
-    const teamSelect = document.getElementById('teamSelect');
-    if (teamSelect) {
-      const options = teams.map(team => `<option value="${team.id}">${escapeHtml(team.name)}</option>`).join('');
-      teamSelect.innerHTML = options;
-    }
   } catch (error) { showError('teamsContainer', error); }
 }
 
 async function loadPlayers() {
   try {
     const players = await api(`/api/players?championship_id=${CHAMPIONSHIP_ID}`);
-    document.getElementById('playersTable').innerHTML = players.map(p => `
-      <tr>
-        <td><strong>#${p.jersey_number}</strong></td>
-        <td>${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</td>
-        <td>${escapeHtml(p.teams?.name || '-')}</td>
-        <td>${escapeHtml(p.position || '-')}</td>
-      </tr>
-    `).join('') || '<tr><td colspan="4">No hay jugadores registrados.</td></tr>';
+    document.getElementById('playersTable').innerHTML = players.map(p => `<tr><td>#${p.jersey_number}</td><td>${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</td><td>${escapeHtml(p.teams?.name || '-')}</td><td>${escapeHtml(p.position || '-')}</td></tr>`).join('') || '<tr><td colspan="4">No hay jugadores registrados.</td></tr>';
   } catch (error) { showError('playersTable', error); }
 }
 
@@ -286,18 +214,9 @@ async function loadMatches() {
     const matches = await api(`/api/matches?championship_id=${CHAMPIONSHIP_ID}`);
     document.getElementById('matchesContainer').innerHTML = matches.map(m => `
       <article class="match-card">
-        <div>
-          <div class="team">${escapeHtml(m.home_team?.name || 'Local')}</div>
-          <p>${escapeHtml(m.match_date || '')} ${escapeHtml(m.match_time || '')}<br>${escapeHtml(m.venue || '')}</p>
-        </div>
-        <div>
-          <div class="score">${m.home_score} - ${m.away_score}</div>
-          <span class="badge">${escapeHtml(m.status)}</span>
-        </div>
-        <div>
-          <div class="team">${escapeHtml(m.away_team?.name || 'Visitante')}</div>
-          <p><button class="detail-link-button" type="button" onclick="openMatchDetail(${m.id})">Ver detalle</button></p>
-        </div>
+        <div><div class="team">${escapeHtml(m.home_team?.name || 'Local')}</div><p>${escapeHtml(m.match_date || '')} ${escapeHtml(m.match_time || '')}<br>${escapeHtml(m.venue || '')}</p></div>
+        <div><div class="score">${m.home_score ?? 0} - ${m.away_score ?? 0}</div><span class="badge">${escapeHtml(m.status || '')}</span></div>
+        <div><div class="team">${escapeHtml(m.away_team?.name || 'Visitante')}</div><button class="detail-btn" type="button" onclick="openMatchDetail(${Number(m.id)})">Ver detalle</button></div>
       </article>
     `).join('') || '<p>No hay partidos registrados.</p>';
   } catch (error) { showError('matchesContainer', error); }
@@ -306,36 +225,14 @@ async function loadMatches() {
 async function loadStandings() {
   try {
     const standings = await api(`/api/standings?championship_id=${CHAMPIONSHIP_ID}`);
-    document.getElementById('standingsTable').innerHTML = standings.map((s, index) => `
-      <tr>
-        <td><strong>${index + 1}. ${escapeHtml(s.team_name)}</strong></td>
-        <td>${s.played}</td>
-        <td>${s.wins}</td>
-        <td>${s.losses}</td>
-        <td>${s.points_for}</td>
-        <td>${s.points_against}</td>
-        <td>${s.point_difference}</td>
-        <td><strong>${s.championship_points}</strong></td>
-      </tr>
-    `).join('') || '<tr><td colspan="8">No hay tabla disponible.</td></tr>';
+    document.getElementById('standingsTable').innerHTML = standings.map((s, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(s.team_name)}</td><td>${s.played}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.points_for}</td><td>${s.points_against}</td><td>${s.point_difference}</td><td><strong>${s.championship_points}</strong></td></tr>`).join('') || '<tr><td colspan="9">No hay tabla disponible.</td></tr>';
   } catch (error) { showError('standingsTable', error); }
 }
 
 async function loadStats() {
   try {
     const stats = await api('/api/stats/players');
-    document.getElementById('statsTable').innerHTML = stats.map(s => `
-      <tr>
-        <td><strong>#${s.jersey_number || '-'} ${escapeHtml(s.player_name)}</strong></td>
-        <td>${escapeHtml(s.team_name || '-')}</td>
-        <td>${s.points}</td>
-        <td>${s.rebounds}</td>
-        <td>${s.assists}</td>
-        <td>${s.steals}</td>
-        <td>${s.blocks}</td>
-        <td>${s.fouls}</td>
-      </tr>
-    `).join('') || '<tr><td colspan="8">No hay estadísticas registradas.</td></tr>';
+    document.getElementById('statsTable').innerHTML = stats.map(s => `<tr><td>#${s.jersey_number || '-'} ${escapeHtml(s.player_name)}</td><td>${escapeHtml(s.team_name || '-')}</td><td>${s.points}</td><td>${s.rebounds}</td><td>${s.assists}</td><td>${s.steals}</td><td>${s.blocks}</td><td>${s.fouls}</td></tr>`).join('') || '<tr><td colspan="8">No hay estadísticas registradas.</td></tr>';
   } catch (error) { showError('statsTable', error); }
 }
 
@@ -343,48 +240,7 @@ async function loadAll() {
   await Promise.all([loadSummary(), loadTeams(), loadPlayers(), loadMatches(), loadStandings(), loadStats()]);
 }
 
-const teamForm = document.getElementById('teamForm');
-if (teamForm) {
-  teamForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const form = new FormData(event.target);
-    const payload = {
-      championship_id: CHAMPIONSHIP_ID,
-      name: form.get('name'),
-      coach_name: form.get('coach_name'),
-      logo_url: form.get('logo_url'),
-    };
-    try {
-      await api('/api/teams', { method: 'POST', body: JSON.stringify(payload) });
-      event.target.reset();
-      await loadAll();
-      alert('Equipo registrado correctamente');
-    } catch (error) { alert(error.message); }
-  });
-}
-
-const playerForm = document.getElementById('playerForm');
-if (playerForm) {
-  playerForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const form = new FormData(event.target);
-    const payload = {
-      team_id: Number(form.get('team_id')),
-      first_name: form.get('first_name'),
-      last_name: form.get('last_name'),
-      jersey_number: Number(form.get('jersey_number')),
-      position: form.get('position'),
-    };
-    try {
-      await api('/api/players', { method: 'POST', body: JSON.stringify(payload) });
-      event.target.reset();
-      await loadAll();
-      alert('Jugador registrado correctamente');
-    } catch (error) { alert(error.message); }
-  });
-}
-
-setupResponsiveMenu();
+setupMenu();
 setupSectionToggles();
 setupMatchDetailModal();
 loadAll();

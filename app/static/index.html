@@ -1,86 +1,76 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fénix Rímac Basketball League</title>
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/static/styles.css?v=20260530-menu-fix" />
 </head>
 <body>
-  <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
-
   <header class="topbar">
+    <button id="menuToggle" class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false">☰</button>
     <div class="brand-block">
-      <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Abrir menú" aria-controls="mainNav" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <div>
-        <h1>🔥 Fénix Rímac Basketball League</h1>
-        <p>Resultados, posiciones y estadísticas con estética profesional</p>
-      </div>
+      <h1>Fénix Rímac Basketball League</h1>
+      <p>Resultados, posiciones y estadísticas con estética profesional</p>
     </div>
-
-    <nav id="mainNav" class="main-nav" aria-label="Menú principal">
-      <div class="mobile-nav-header">
-        <strong>Fénix Rímac</strong>
-        <button id="closeMenuBtn" class="close-menu-btn" type="button" aria-label="Cerrar menú">×</button>
-      </div>
-      <a href="#inicio">Inicio</a>
-      <a href="#equipos">Equipos</a>
-      <a href="#jugadores">Jugadores</a>
-      <a href="#partidos">Partidos</a>
-      <a href="#posiciones">Posiciones</a>
-      <a href="#stats">Estadísticas</a>
-    </nav>
   </header>
 
+  <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
+
+  <aside id="sideMenu" class="side-menu" aria-label="Menú principal">
+    <div class="side-menu-header">
+      <strong>Fénix Rímac</strong>
+      <button id="closeMenu" class="close-menu" type="button" aria-label="Cerrar menú">×</button>
+    </div>
+    <nav class="main-nav">
+      <a href="#inicio" data-section-link="inicio">Inicio</a>
+      <a href="#equipos" data-section-link="equipos">Equipos</a>
+      <a href="#jugadores" data-section-link="jugadores">Jugadores</a>
+      <a href="#partidos" data-section-link="partidos">Partidos</a>
+      <a href="#posiciones" data-section-link="posiciones">Posiciones</a>
+      <a href="#estadisticas" data-section-link="estadisticas">Estadísticas</a>
+    </nav>
+  </aside>
+
   <main>
-    <section id="inicio" class="section hero">
-      <div class="section-title-row hero-title-row">
+    <section id="inicio" class="section hero-section">
+      <div class="hero">
         <div>
+          <span class="badge">Temporada en vivo</span>
           <h2>Temporada en vivo</h2>
           <p>Experiencia visual estilo liga profesional: equipos, jugadores, calendario, resultados, posiciones y rankings en tiempo real.</p>
         </div>
-      </div>
-      <div class="section-content hero-content">
-        <div id="summaryCards" class="cards"></div>
+        <div id="summaryCards" class="cards summary-cards"></div>
       </div>
     </section>
 
     <section id="equipos" class="section section-collapsible">
-      <div class="section-title-row">
+      <div class="section-header">
         <h2>Equipos participantes</h2>
-        <div class="section-actions">
-          <button onclick="loadAll()" type="button">Actualizar</button>
-          <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
-        </div>
+        <button class="section-toggle" type="button" aria-label="Contraer sección" aria-expanded="true" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
       </div>
       <div class="section-content">
-        <div id="teamsContainer" class="cards"></div>
+        <div id="teamsContainer" class="cards team-grid"></div>
       </div>
     </section>
 
     <section id="jugadores" class="section section-collapsible">
-      <div class="section-title-row">
+      <div class="section-header">
         <h2>Jugadores</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+        <button class="section-toggle" type="button" aria-label="Contraer sección" aria-expanded="true" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
       </div>
-      <div class="section-content">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>#</th><th>Jugador</th><th>Equipo</th><th>Posición</th></tr>
-            </thead>
-            <tbody id="playersTable"></tbody>
-          </table>
-        </div>
+      <div class="section-content table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Jugador</th><th>Equipo</th><th>Posición</th></tr></thead>
+          <tbody id="playersTable"></tbody>
+        </table>
       </div>
     </section>
 
     <section id="partidos" class="section section-collapsible">
-      <div class="section-title-row">
+      <div class="section-header">
         <h2>Calendario y resultados</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+        <button class="section-toggle" type="button" aria-label="Contraer sección" aria-expanded="true" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
       </div>
       <div class="section-content">
         <div id="matchesContainer" class="match-list"></div>
@@ -88,52 +78,41 @@
     </section>
 
     <section id="posiciones" class="section section-collapsible">
-      <div class="section-title-row">
+      <div class="section-header">
         <h2>Tabla de posiciones</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+        <button class="section-toggle" type="button" aria-label="Contraer sección" aria-expanded="true" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
       </div>
-      <div class="section-content">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Equipo</th><th>PJ</th><th>PG</th><th>PP</th><th>PF</th><th>PC</th><th>DIF</th><th>PTS</th></tr>
-            </thead>
-            <tbody id="standingsTable"></tbody>
-          </table>
-        </div>
+      <div class="section-content table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PP</th><th>PF</th><th>PC</th><th>DIF</th><th>PTS</th></tr></thead>
+          <tbody id="standingsTable"></tbody>
+        </table>
       </div>
     </section>
 
-    <section id="stats" class="section section-collapsible">
-      <div class="section-title-row">
+    <section id="estadisticas" class="section section-collapsible">
+      <div class="section-header">
         <h2>Ranking de jugadores</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+        <button class="section-toggle" type="button" aria-label="Contraer sección" aria-expanded="true" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
       </div>
-      <div class="section-content">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>REB</th><th>AST</th><th>ROB</th><th>BLK</th><th>FALTAS</th></tr>
-            </thead>
-            <tbody id="statsTable"></tbody>
-          </table>
-        </div>
+      <div class="section-content table-wrap">
+        <table>
+          <thead><tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>REB</th><th>AST</th><th>ROB</th><th>BLK</th><th>FALTAS</th></tr></thead>
+          <tbody id="statsTable"></tbody>
+        </table>
       </div>
     </section>
   </main>
 
-  <div id="matchDetailModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="matchDetailTitle">
+  <div id="matchDetailModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal-backdrop" data-close-match-detail></div>
-    <div class="modal-panel">
-      <button class="modal-close" type="button" aria-label="Cerrar detalle" data-close-match-detail>×</button>
+    <div class="modal-card">
+      <button class="modal-close" type="button" data-close-match-detail aria-label="Cerrar detalle">×</button>
       <div id="matchDetailContent"></div>
     </div>
   </div>
 
-  <footer>
-    <p>Fénix Rímac Basketball League · Python + Supabase PostgreSQL</p>
-  </footer>
-
-  <script src="/app.js"></script>
+  <footer>Fénix Rímac Basketball League</footer>
+  <script src="/static/app.js?v=20260530-menu-fix"></script>
 </body>
 </html>
