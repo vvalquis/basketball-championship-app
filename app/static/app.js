@@ -31,6 +31,50 @@ function teamLogo(team) {
   return `<div class="team-logo">${team?.logo_url ? `<img src="${escapeHtml(team.logo_url)}" alt="Logo ${name}" loading="lazy" />` : '🏀'}</div>`;
 }
 
+function setupResponsiveMenu() {
+  const body = document.body;
+  const menuButton = document.getElementById('mobileMenuBtn');
+  const closeButton = document.getElementById('closeMenuBtn');
+  const overlay = document.getElementById('menuOverlay');
+  const nav = document.getElementById('mainNav');
+  const links = nav ? nav.querySelectorAll('a') : [];
+
+  const openMenu = () => {
+    body.classList.add('menu-open');
+    menuButton?.setAttribute('aria-expanded', 'true');
+    overlay?.setAttribute('aria-hidden', 'false');
+  };
+
+  const closeMenu = () => {
+    body.classList.remove('menu-open');
+    menuButton?.setAttribute('aria-expanded', 'false');
+    overlay?.setAttribute('aria-hidden', 'true');
+  };
+
+  menuButton?.addEventListener('click', openMenu);
+  closeButton?.addEventListener('click', closeMenu);
+  overlay?.addEventListener('click', closeMenu);
+  links.forEach(link => link.addEventListener('click', closeMenu));
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeMenu();
+  });
+}
+
+function setupSectionToggles() {
+  document.querySelectorAll('.section-collapsible').forEach((section) => {
+    const button = section.querySelector('.section-toggle');
+    const content = section.querySelector('.section-content');
+    if (!button || !content) return;
+
+    button.addEventListener('click', () => {
+      const collapsed = section.classList.toggle('section-collapsed');
+      button.setAttribute('aria-expanded', String(!collapsed));
+      button.textContent = collapsed ? 'Mostrar' : 'Ocultar';
+    });
+  });
+}
+
 async function loadSummary() {
   try {
     const summary = await api(`/api/summary?championship_id=${CHAMPIONSHIP_ID}`);
@@ -171,4 +215,6 @@ document.getElementById('playerForm').addEventListener('submit', async (event) =
   } catch (error) { alert(error.message); }
 });
 
+setupResponsiveMenu();
+setupSectionToggles();
 loadAll();

@@ -7,12 +7,24 @@
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
+  <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
+
   <header class="topbar">
-    <div>
-      <h1>🔥 Fénix Rímac Basketball League</h1>
-      <p>Resultados, posiciones y estadísticas con estética profesional</p>
+    <div class="brand-block">
+      <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Abrir menú" aria-controls="mainNav" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div>
+        <h1>🔥 Fénix Rímac Basketball League</h1>
+        <p>Resultados, posiciones y estadísticas con estética profesional</p>
+      </div>
     </div>
-    <nav>
+
+    <nav id="mainNav" class="main-nav" aria-label="Menú principal">
+      <div class="mobile-nav-header">
+        <strong>Fénix Rímac</strong>
+        <button id="closeMenuBtn" class="close-menu-btn" type="button" aria-label="Cerrar menú">×</button>
+      </div>
       <a href="#inicio">Inicio</a>
       <a href="#equipos">Equipos</a>
       <a href="#jugadores">Jugadores</a>
@@ -24,88 +36,124 @@
   </header>
 
   <main>
-    <section id="inicio" class="section hero">
-      <div>
-        <h2>Temporada en vivo</h2>
-        <p>Experiencia visual estilo liga profesional: equipos, jugadores, calendario, resultados, posiciones y rankings conectados a Supabase.</p>
+    <section id="inicio" class="section hero section-collapsible">
+      <div class="section-title-row hero-title-row">
+        <div>
+          <h2>Temporada en vivo</h2>
+          <p>Experiencia visual estilo liga profesional: equipos, jugadores, calendario, resultados, posiciones y rankings conectados a Supabase.</p>
+        </div>
+        <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
       </div>
-      <div id="summaryCards" class="cards"></div>
+      <div class="section-content hero-content">
+        <div id="summaryCards" class="cards"></div>
+      </div>
     </section>
 
-    <section id="equipos" class="section">
-      <div class="section-header">
+    <section id="equipos" class="section section-collapsible">
+      <div class="section-title-row">
         <h2>Equipos participantes</h2>
-        <button onclick="loadAll()">Actualizar</button>
+        <div class="section-actions">
+          <button onclick="loadAll()" type="button">Actualizar</button>
+          <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
+        </div>
       </div>
-      <div id="teamsContainer" class="cards"></div>
-    </section>
-
-    <section id="jugadores" class="section">
-      <h2>Jugadores</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>#</th><th>Jugador</th><th>Equipo</th><th>Posición</th></tr>
-          </thead>
-          <tbody id="playersTable"></tbody>
-        </table>
+      <div class="section-content">
+        <div id="teamsContainer" class="cards"></div>
       </div>
     </section>
 
-    <section id="partidos" class="section">
-      <h2>Calendario y resultados</h2>
-      <div id="matchesContainer" class="match-list"></div>
-    </section>
-
-    <section id="posiciones" class="section">
-      <h2>Tabla de posiciones</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>Equipo</th><th>PJ</th><th>PG</th><th>PP</th><th>PF</th><th>PC</th><th>DIF</th><th>PTS</th></tr>
-          </thead>
-          <tbody id="standingsTable"></tbody>
-        </table>
+    <section id="jugadores" class="section section-collapsible">
+      <div class="section-title-row">
+        <h2>Jugadores</h2>
+        <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
+      </div>
+      <div class="section-content">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Jugador</th><th>Equipo</th><th>Posición</th></tr>
+            </thead>
+            <tbody id="playersTable"></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
-    <section id="stats" class="section">
-      <h2>Ranking de jugadores</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>REB</th><th>AST</th><th>ROB</th><th>BLK</th><th>FALTAS</th></tr>
-          </thead>
-          <tbody id="statsTable"></tbody>
-        </table>
+    <section id="partidos" class="section section-collapsible">
+      <div class="section-title-row">
+        <h2>Calendario y resultados</h2>
+        <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
+      </div>
+      <div class="section-content">
+        <div id="matchesContainer" class="match-list"></div>
       </div>
     </section>
 
-    <section id="admin" class="section admin-grid">
-      <div class="form-card">
-        <h2>Registrar equipo</h2>
-        <form id="teamForm">
-          <label>Nombre del equipo<input name="name" required placeholder="Ej: Lima Basket" /></label>
-          <label>Entrenador<input name="coach_name" placeholder="Ej: Juan Pérez" /></label>
-          <label>URL logo<input name="logo_url" placeholder="https://..." /></label>
-          <button type="submit">Guardar equipo</button>
-        </form>
+    <section id="posiciones" class="section section-collapsible">
+      <div class="section-title-row">
+        <h2>Tabla de posiciones</h2>
+        <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
       </div>
+      <div class="section-content">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Equipo</th><th>PJ</th><th>PG</th><th>PP</th><th>PF</th><th>PC</th><th>DIF</th><th>PTS</th></tr>
+            </thead>
+            <tbody id="standingsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-      <div class="form-card">
-        <h2>Registrar jugador</h2>
-        <form id="playerForm">
-          <label>Equipo<select name="team_id" id="teamSelect" required></select></label>
-          <label>Nombres<input name="first_name" required /></label>
-          <label>Apellidos<input name="last_name" required /></label>
-          <label>Número camiseta<input name="jersey_number" type="number" required /></label>
-          <label>Posición
-            <select name="position">
-              <option>Base</option><option>Escolta</option><option>Alero</option><option>Ala-Pívot</option><option>Pívot</option>
-            </select>
-          </label>
-          <button type="submit">Guardar jugador</button>
-        </form>
+    <section id="stats" class="section section-collapsible">
+      <div class="section-title-row">
+        <h2>Ranking de jugadores</h2>
+        <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
+      </div>
+      <div class="section-content">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>REB</th><th>AST</th><th>ROB</th><th>BLK</th><th>FALTAS</th></tr>
+            </thead>
+            <tbody id="statsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="admin" class="section section-collapsible">
+      <div class="section-title-row">
+        <h2>Administración</h2>
+        <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
+      </div>
+      <div class="section-content admin-grid">
+        <div class="form-card">
+          <h2>Registrar equipo</h2>
+          <form id="teamForm">
+            <label>Nombre del equipo<input name="name" required placeholder="Ej: Lima Basket" /></label>
+            <label>Entrenador<input name="coach_name" placeholder="Ej: Juan Pérez" /></label>
+            <label>URL logo<input name="logo_url" placeholder="https://..." /></label>
+            <button type="submit">Guardar equipo</button>
+          </form>
+        </div>
+
+        <div class="form-card">
+          <h2>Registrar jugador</h2>
+          <form id="playerForm">
+            <label>Equipo<select name="team_id" id="teamSelect" required></select></label>
+            <label>Nombres<input name="first_name" required /></label>
+            <label>Apellidos<input name="last_name" required /></label>
+            <label>Número camiseta<input name="jersey_number" type="number" required /></label>
+            <label>Posición
+              <select name="position">
+                <option>Base</option><option>Escolta</option><option>Alero</option><option>Ala-Pívot</option><option>Pívot</option>
+              </select>
+            </label>
+            <button type="submit">Guardar jugador</button>
+          </form>
+        </div>
       </div>
     </section>
   </main>
