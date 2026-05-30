@@ -948,3 +948,31 @@ footer p { color: var(--muted); }
     width: min(100%, 260px);
   }
 }
+
+
+/* Ajustes selector de campeonato y título responsive */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.brand-title-mobile { display: none; }
+.brand-title-full { display: inline; }
+
+.championship-control label:not(.sr-only) { display: none !important; }
+.championship-control { gap: 0 !important; }
+
+@media (max-width: 600px) {
+  .brand-title-full { display: none !important; }
+  .brand-title-mobile { display: inline !important; }
+  .topbar h1 { font-size: 1.05rem !important; letter-spacing: -.025em; }
+  .championship-control { width: 100%; }
+  .championship-control select { width: 100%; }
+}

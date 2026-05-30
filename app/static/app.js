@@ -1,4 +1,4 @@
-let currentChampionshipId = Number(localStorage.getItem('selectedChampionshipId') || 1);
+let currentChampionshipId = null;
 let availableChampionships = [];
 
 function getChampionshipId() {
@@ -7,12 +7,11 @@ function getChampionshipId() {
 
 function setChampionshipId(value) {
   currentChampionshipId = Number(value || 1);
-  localStorage.setItem('selectedChampionshipId', String(currentChampionshipId));
 }
 
 function selectedChampionshipLabel() {
   const item = availableChampionships.find(champ => Number(champ.id) === Number(currentChampionshipId));
-  return item ? `${item.name}${item.season ? ' · ' + item.season : ''}` : `Campeonato ${currentChampionshipId}`;
+  return item ? `${item.name}${item.season ? ' · ' + item.season : ''}` : `Torneo ${currentChampionshipId || ''}`;
 }
 
 async function api(path, options = {}) {
@@ -250,16 +249,17 @@ async function loadChampionships() {
     availableChampionships = await api('/api/championships');
 
     if (!Array.isArray(availableChampionships) || availableChampionships.length === 0) {
-      select.innerHTML = '<option value="1">Campeonato principal</option>';
+      select.innerHTML = '<option value="1">Torneo principal</option>';
       setChampionshipId(1);
       return;
     }
 
-    const exists = availableChampionships.some(champ => Number(champ.id) === Number(currentChampionshipId));
-    if (!exists) setChampionshipId(availableChampionships[0].id);
+    // Por defecto siempre se selecciona el primer registro devuelto por la lista.
+    // Así evitamos quedar amarrados al id 1 o a una selección anterior del navegador.
+    setChampionshipId(availableChampionships[0].id);
 
     select.innerHTML = availableChampionships.map(champ => {
-      const label = `${escapeHtml(champ.name || 'Campeonato')} ${champ.season ? '· ' + escapeHtml(champ.season) : ''}`;
+      const label = `${escapeHtml(champ.name || 'Torneo')} ${champ.season ? '· ' + escapeHtml(champ.season) : ''}`;
       return `<option value="${champ.id}" ${Number(champ.id) === Number(currentChampionshipId) ? 'selected' : ''}>${label}</option>`;
     }).join('');
 
@@ -269,7 +269,7 @@ async function loadChampionships() {
       navigateToSection('inicio');
     });
   } catch (error) {
-    select.innerHTML = `<option value="${getChampionshipId()}">Campeonato ${getChampionshipId()}</option>`;
+    select.innerHTML = `<option value="${getChampionshipId()}">Torneo ${getChampionshipId()}</option>`;
     console.error('No se pudieron cargar los campeonatos:', error);
   }
 }
