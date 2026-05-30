@@ -37,7 +37,7 @@ function setupResponsiveMenu() {
   const closeButton = document.getElementById('closeMenuBtn');
   const overlay = document.getElementById('menuOverlay');
   const nav = document.getElementById('mainNav');
-  const links = nav ? nav.querySelectorAll('a') : [];
+  const links = nav ? nav.querySelectorAll('a[href^="#"]') : [];
 
   const openMenu = () => {
     body.classList.add('menu-open');
@@ -54,10 +54,26 @@ function setupResponsiveMenu() {
   menuButton?.addEventListener('click', openMenu);
   closeButton?.addEventListener('click', closeMenu);
   overlay?.addEventListener('click', closeMenu);
-  links.forEach(link => link.addEventListener('click', closeMenu));
+
+  links.forEach(link => {
+    link.addEventListener('click', (event) => {
+      const targetId = link.getAttribute('href');
+      const target = targetId ? document.querySelector(targetId) : null;
+      if (!target) return;
+      event.preventDefault();
+      closeMenu();
+      window.setTimeout(() => {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.replaceState(null, '', targetId);
+      }, 120);
+    });
+  });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeMenu();
+    if (event.key === 'Escape') {
+      closeMenu();
+      closeMatchDetail();
+    }
   });
 }
 
@@ -67,11 +83,111 @@ function setupSectionToggles() {
     const content = section.querySelector('.section-content');
     if (!button || !content) return;
 
+    const icon = button.querySelector('.toggle-icon') || button;
     button.addEventListener('click', () => {
       const collapsed = section.classList.toggle('section-collapsed');
       button.setAttribute('aria-expanded', String(!collapsed));
-      button.textContent = collapsed ? 'Mostrar' : 'Ocultar';
+      button.setAttribute('aria-label', collapsed ? 'Expandir sección' : 'Contraer sección');
+      button.setAttribute('title', collapsed ? 'Expandir sección' : 'Contraer sección');
+      icon.textContent = collapsed ? '⌄' : '⌃';
     });
+  });
+}
+
+function closeMatchDetail() {
+  const modal = document.getElementById('matchDetailModal');
+  if (!modal) return;
+  modal.classList.remove('modal-open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-is-open');
+}
+
+function periodLabel(number) {
+  const n = Number(number);
+  if (n === 1) return '1.er tiempo / cuarto';
+  if (n === 2) return '2.º tiempo / cuarto';
+  if (n === 3) return '3.er tiempo / cuarto';
+  if (n === 4) return '4.º tiempo / cuarto';
+  return `Tiempo extra ${escapeHtml(number)}`;
+}
+
+async function openMatchDetail(matchId) {
+  const modal = document.getElementById('matchDetailModal');
+  const content = document.getElementById('matchDetailContent');
+  if (!modal || !content) return;
+
+  modal.classList.add('modal-open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-is-open');
+  content.innerHTML = '<div class="loading-detail">Cargando detalle del partido...</div>';
+
+  try {
+    const match = await api(`/api/matches/${matchId}`);
+    const homeName = escapeHtml(match.home_team?.name || 'Local');
+    const awayName = escapeHtml(match.away_team?.name || 'Visitante');
+    const periods = Array.isArray(match.periods) ? match.periods : [];
+    const playerStats = Array.isArray(match.player_stats) ? match.player_stats : [];
+
+    const periodsHtml = periods.length ? periods.map(period => `
+      <tr>
+        <td>${periodLabel(period.period_number)}</td>
+        <td>${period.home_score ?? 0}</td>
+        <td>${period.away_score ?? 0}</td>
+      </tr>
+    `).join('') : '<tr><td colspan="3">Aún no hay resultados por tiempo registrados.</td></tr>';
+
+    const statsHtml = playerStats.length ? playerStats.map(row => {
+      const player = row.players || {};
+      const team = row.teams || {};
+      return `
+        <tr>
+          <td>#${escapeHtml(player.jersey_number || '-')} ${escapeHtml(player.first_name || '')} ${escapeHtml(player.last_name || '')}</td>
+          <td>${escapeHtml(team.name || '-')}</td>
+          <td>${row.points ?? 0}</td>
+          <td>${row.rebounds ?? 0}</td>
+          <td>${row.assists ?? 0}</td>
+          <td>${row.fouls ?? 0}</td>
+        </tr>
+      `;
+    }).join('') : '<tr><td colspan="6">Aún no hay estadísticas individuales registradas.</td></tr>';
+
+    content.innerHTML = `
+      <div class="modal-header-block">
+        <span class="badge">${escapeHtml(match.status || '')}</span>
+        <h2 id="matchDetailTitle">${homeName} vs ${awayName}</h2>
+        <p>${escapeHtml(match.match_date || '')} ${escapeHtml(match.match_time || '')} · ${escapeHtml(match.venue || '')}</p>
+      </div>
+
+      <div class="detail-scoreboard">
+        <div><strong>${homeName}</strong><span>${match.home_score ?? 0}</span></div>
+        <div class="detail-vs">VS</div>
+        <div><strong>${awayName}</strong><span>${match.away_score ?? 0}</span></div>
+      </div>
+
+      <h3>Resultados por tiempo</h3>
+      <div class="table-wrap detail-table-wrap">
+        <table>
+          <thead><tr><th>Tiempo</th><th>${homeName}</th><th>${awayName}</th></tr></thead>
+          <tbody>${periodsHtml}</tbody>
+        </table>
+      </div>
+
+      <h3>Estadísticas de jugadores</h3>
+      <div class="table-wrap detail-table-wrap">
+        <table>
+          <thead><tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>REB</th><th>AST</th><th>FALTAS</th></tr></thead>
+          <tbody>${statsHtml}</tbody>
+        </table>
+      </div>
+    `;
+  } catch (error) {
+    content.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
+  }
+}
+
+function setupMatchDetailModal() {
+  document.querySelectorAll('[data-close-match-detail]').forEach((el) => {
+    el.addEventListener('click', closeMatchDetail);
   });
 }
 
@@ -99,8 +215,11 @@ async function loadTeams() {
       </article>
     `).join('') || '<p>No hay equipos registrados.</p>';
 
-    const options = teams.map(team => `<option value="${team.id}">${escapeHtml(team.name)}</option>`).join('');
-    document.getElementById('teamSelect').innerHTML = options;
+    const teamSelect = document.getElementById('teamSelect');
+    if (teamSelect) {
+      const options = teams.map(team => `<option value="${team.id}">${escapeHtml(team.name)}</option>`).join('');
+      teamSelect.innerHTML = options;
+    }
   } catch (error) { showError('teamsContainer', error); }
 }
 
@@ -133,7 +252,7 @@ async function loadMatches() {
         </div>
         <div>
           <div class="team">${escapeHtml(m.away_team?.name || 'Visitante')}</div>
-          <p><a href="/api/matches/${m.id}" target="_blank" rel="noopener">Ver detalle JSON</a></p>
+          <p><button class="detail-link-button" type="button" onclick="openMatchDetail(${m.id})">Ver detalle</button></p>
         </div>
       </article>
     `).join('') || '<p>No hay partidos registrados.</p>';
@@ -180,41 +299,48 @@ async function loadAll() {
   await Promise.all([loadSummary(), loadTeams(), loadPlayers(), loadMatches(), loadStandings(), loadStats()]);
 }
 
-document.getElementById('teamForm').addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const form = new FormData(event.target);
-  const payload = {
-    championship_id: CHAMPIONSHIP_ID,
-    name: form.get('name'),
-    coach_name: form.get('coach_name'),
-    logo_url: form.get('logo_url'),
-  };
-  try {
-    await api('/api/teams', { method: 'POST', body: JSON.stringify(payload) });
-    event.target.reset();
-    await loadAll();
-    alert('Equipo registrado correctamente');
-  } catch (error) { alert(error.message); }
-});
+const teamForm = document.getElementById('teamForm');
+if (teamForm) {
+  teamForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.target);
+    const payload = {
+      championship_id: CHAMPIONSHIP_ID,
+      name: form.get('name'),
+      coach_name: form.get('coach_name'),
+      logo_url: form.get('logo_url'),
+    };
+    try {
+      await api('/api/teams', { method: 'POST', body: JSON.stringify(payload) });
+      event.target.reset();
+      await loadAll();
+      alert('Equipo registrado correctamente');
+    } catch (error) { alert(error.message); }
+  });
+}
 
-document.getElementById('playerForm').addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const form = new FormData(event.target);
-  const payload = {
-    team_id: Number(form.get('team_id')),
-    first_name: form.get('first_name'),
-    last_name: form.get('last_name'),
-    jersey_number: Number(form.get('jersey_number')),
-    position: form.get('position'),
-  };
-  try {
-    await api('/api/players', { method: 'POST', body: JSON.stringify(payload) });
-    event.target.reset();
-    await loadAll();
-    alert('Jugador registrado correctamente');
-  } catch (error) { alert(error.message); }
-});
+const playerForm = document.getElementById('playerForm');
+if (playerForm) {
+  playerForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.target);
+    const payload = {
+      team_id: Number(form.get('team_id')),
+      first_name: form.get('first_name'),
+      last_name: form.get('last_name'),
+      jersey_number: Number(form.get('jersey_number')),
+      position: form.get('position'),
+    };
+    try {
+      await api('/api/players', { method: 'POST', body: JSON.stringify(payload) });
+      event.target.reset();
+      await loadAll();
+      alert('Jugador registrado correctamente');
+    } catch (error) { alert(error.message); }
+  });
+}
 
 setupResponsiveMenu();
 setupSectionToggles();
+setupMatchDetailModal();
 loadAll();

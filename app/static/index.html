@@ -31,18 +31,16 @@
       <a href="#partidos">Partidos</a>
       <a href="#posiciones">Posiciones</a>
       <a href="#stats">Estadísticas</a>
-      <a href="#admin">Admin</a>
     </nav>
   </header>
 
   <main>
-    <section id="inicio" class="section hero section-collapsible">
+    <section id="inicio" class="section hero">
       <div class="section-title-row hero-title-row">
         <div>
           <h2>Temporada en vivo</h2>
-          <p>Experiencia visual estilo liga profesional: equipos, jugadores, calendario, resultados, posiciones y rankings conectados a Supabase.</p>
+          <p>Experiencia visual estilo liga profesional: equipos, jugadores, calendario, resultados, posiciones y rankings en tiempo real.</p>
         </div>
-        <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
       </div>
       <div class="section-content hero-content">
         <div id="summaryCards" class="cards"></div>
@@ -54,7 +52,7 @@
         <h2>Equipos participantes</h2>
         <div class="section-actions">
           <button onclick="loadAll()" type="button">Actualizar</button>
-          <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
+          <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
         </div>
       </div>
       <div class="section-content">
@@ -65,7 +63,7 @@
     <section id="jugadores" class="section section-collapsible">
       <div class="section-title-row">
         <h2>Jugadores</h2>
-        <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
+        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
       </div>
       <div class="section-content">
         <div class="table-wrap">
@@ -82,7 +80,7 @@
     <section id="partidos" class="section section-collapsible">
       <div class="section-title-row">
         <h2>Calendario y resultados</h2>
-        <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
+        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
       </div>
       <div class="section-content">
         <div id="matchesContainer" class="match-list"></div>
@@ -92,7 +90,7 @@
     <section id="posiciones" class="section section-collapsible">
       <div class="section-title-row">
         <h2>Tabla de posiciones</h2>
-        <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
+        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
       </div>
       <div class="section-content">
         <div class="table-wrap">
@@ -109,7 +107,7 @@
     <section id="stats" class="section section-collapsible">
       <div class="section-title-row">
         <h2>Ranking de jugadores</h2>
-        <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
+        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
       </div>
       <div class="section-content">
         <div class="table-wrap">
@@ -122,41 +120,15 @@
         </div>
       </div>
     </section>
-
-    <section id="admin" class="section section-collapsible">
-      <div class="section-title-row">
-        <h2>Administración</h2>
-        <button class="section-toggle" type="button" aria-expanded="true">Ocultar</button>
-      </div>
-      <div class="section-content admin-grid">
-        <div class="form-card">
-          <h2>Registrar equipo</h2>
-          <form id="teamForm">
-            <label>Nombre del equipo<input name="name" required placeholder="Ej: Lima Basket" /></label>
-            <label>Entrenador<input name="coach_name" placeholder="Ej: Juan Pérez" /></label>
-            <label>URL logo<input name="logo_url" placeholder="https://..." /></label>
-            <button type="submit">Guardar equipo</button>
-          </form>
-        </div>
-
-        <div class="form-card">
-          <h2>Registrar jugador</h2>
-          <form id="playerForm">
-            <label>Equipo<select name="team_id" id="teamSelect" required></select></label>
-            <label>Nombres<input name="first_name" required /></label>
-            <label>Apellidos<input name="last_name" required /></label>
-            <label>Número camiseta<input name="jersey_number" type="number" required /></label>
-            <label>Posición
-              <select name="position">
-                <option>Base</option><option>Escolta</option><option>Alero</option><option>Ala-Pívot</option><option>Pívot</option>
-              </select>
-            </label>
-            <button type="submit">Guardar jugador</button>
-          </form>
-        </div>
-      </div>
-    </section>
   </main>
+
+  <div id="matchDetailModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="matchDetailTitle">
+    <div class="modal-backdrop" data-close-match-detail></div>
+    <div class="modal-panel">
+      <button class="modal-close" type="button" aria-label="Cerrar detalle" data-close-match-detail>×</button>
+      <div id="matchDetailContent"></div>
+    </div>
+  </div>
 
   <footer>
     <p>Fénix Rímac Basketball League · Python + Supabase PostgreSQL</p>

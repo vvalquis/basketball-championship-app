@@ -197,18 +197,34 @@ class BasketballHandler(BaseHTTPRequestHandler):
             return self._send_json(data)
 
         if path == "/api/matches":
-            data = db.select("matches", {"select": "*,home_team:teams!matches_home_team_id_fkey(name),away_team:teams!matches_away_team_id_fkey(name)", "championship_id": f"eq.{championship_id}", "order": "match_date.asc,match_time.asc"})
+            data = db.select("matches", {"select": "*", "championship_id": f"eq.{championship_id}", "order": "match_date.asc,match_time.asc"})
+            team_ids = sorted({str(m.get("home_team_id")) for m in data if m.get("home_team_id")} | {str(m.get("away_team_id")) for m in data if m.get("away_team_id")})
+            teams_by_id = {}
+            if team_ids:
+                teams = db.select("teams", {"select": "id,name,logo_url", "id": f"in.({','.join(team_ids)})"})
+                teams_by_id = {str(team.get("id")): team for team in teams}
+            for match in data:
+                match["home_team"] = teams_by_id.get(str(match.get("home_team_id")), {"name": "Local"})
+                match["away_team"] = teams_by_id.get(str(match.get("away_team_id")), {"name": "Visitante"})
             return self._send_json(data)
 
         match_detail = re.match(r"^/api/matches/(\d+)$", path)
         if match_detail:
             match_id = match_detail.group(1)
-            matches = db.select("matches", {"select": "*,home_team:teams!matches_home_team_id_fkey(name),away_team:teams!matches_away_team_id_fkey(name)", "id": f"eq.{match_id}"})
+            matches = db.select("matches", {"select": "*", "id": f"eq.{match_id}"})
             if not matches:
                 return self._send_error("Partido no encontrado", 404)
+            response = matches[0]
+            team_ids = [str(tid) for tid in [response.get("home_team_id"), response.get("away_team_id"), response.get("winner_team_id")] if tid]
+            teams_by_id = {}
+            if team_ids:
+                teams = db.select("teams", {"select": "id,name,logo_url", "id": f"in.({','.join(sorted(set(team_ids)))})"})
+                teams_by_id = {str(team.get("id")): team for team in teams}
+            response["home_team"] = teams_by_id.get(str(response.get("home_team_id")), {"name": "Local"})
+            response["away_team"] = teams_by_id.get(str(response.get("away_team_id")), {"name": "Visitante"})
+            response["winner_team"] = teams_by_id.get(str(response.get("winner_team_id"))) if response.get("winner_team_id") else None
             periods = db.select("match_periods", {"select": "*", "match_id": f"eq.{match_id}", "order": "period_number.asc"})
             stats = db.select("player_match_stats", {"select": "*,players(first_name,last_name,jersey_number),teams(name)", "match_id": f"eq.{match_id}", "order": "points.desc"})
-            response = matches[0]
             response["periods"] = periods
             response["player_stats"] = stats
             return self._send_json(response)
