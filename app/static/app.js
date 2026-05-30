@@ -31,13 +31,44 @@ function teamLogo(team) {
   return `<div class="team-logo">${team?.logo_url ? `<img src="${escapeHtml(team.logo_url)}" alt="Logo ${name}" loading="lazy" />` : '🏀'}</div>`;
 }
 
+function navigateToSection(targetId, options = {}) {
+  const id = String(targetId || '').replace('#', '');
+  const target = document.getElementById(id);
+  if (!target) return false;
+
+  if (target.classList.contains('section-collapsible') && target.classList.contains('section-collapsed')) {
+    target.classList.remove('section-collapsed');
+    const button = target.querySelector('.section-toggle');
+    const icon = button?.querySelector('.toggle-icon');
+    button?.setAttribute('aria-expanded', 'true');
+    button?.setAttribute('aria-label', 'Contraer sección');
+    button?.setAttribute('title', 'Contraer sección');
+    if (icon) icon.textContent = '⌃';
+  }
+
+  const offset = options.offset ?? 92;
+  const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - offset);
+  window.scrollTo({ top, behavior: options.behavior || 'smooth' });
+
+  if (history.replaceState) {
+    history.replaceState(null, '', `#${id}`);
+  } else {
+    window.location.hash = id;
+  }
+
+  document.querySelectorAll('.main-nav a').forEach((link) => {
+    link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+  });
+
+  return true;
+}
+
 function setupResponsiveMenu() {
   const body = document.body;
   const menuButton = document.getElementById('mobileMenuBtn');
   const closeButton = document.getElementById('closeMenuBtn');
   const overlay = document.getElementById('menuOverlay');
   const nav = document.getElementById('mainNav');
-  const links = nav ? nav.querySelectorAll('a[href^="#"]') : [];
 
   const openMenu = () => {
     body.classList.add('menu-open');
@@ -51,41 +82,35 @@ function setupResponsiveMenu() {
     overlay?.setAttribute('aria-hidden', 'true');
   };
 
-  const expandSectionIfNeeded = (section) => {
-    if (!section || !section.classList.contains('section-collapsible')) return;
-    if (!section.classList.contains('section-collapsed')) return;
-
-    section.classList.remove('section-collapsed');
-    const button = section.querySelector('.section-toggle');
-    const icon = button?.querySelector('.toggle-icon');
-    button?.setAttribute('aria-expanded', 'true');
-    button?.setAttribute('aria-label', 'Contraer sección');
-    button?.setAttribute('title', 'Contraer sección');
-    if (icon) icon.textContent = '⌃';
-  };
-
-  menuButton?.addEventListener('click', () => {
+  menuButton?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     if (body.classList.contains('menu-open')) closeMenu();
     else openMenu();
   });
-  closeButton?.addEventListener('click', closeMenu);
+
+  closeButton?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    closeMenu();
+  });
+
   overlay?.addEventListener('click', closeMenu);
 
-  links.forEach(link => {
-    link.addEventListener('click', (event) => {
-      const targetId = link.getAttribute('href');
-      const target = targetId ? document.querySelector(targetId) : null;
-      if (!target) return;
+  nav?.addEventListener('click', (event) => {
+    const link = event.target.closest('a[href^="#"]');
+    if (!link) return;
 
-      event.preventDefault();
-      expandSectionIfNeeded(target);
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      history.replaceState(null, '', targetId);
+    event.preventDefault();
+    event.stopPropagation();
 
-      window.setTimeout(() => {
-        closeMenu();
-      }, 180);
-    });
+    const targetId = link.getAttribute('href');
+    closeMenu();
+
+    // Primero se cierra el menú y se quita overflow:hidden; luego se hace el scroll.
+    window.setTimeout(() => {
+      navigateToSection(targetId, { offset: 92, behavior: 'smooth' });
+    }, 80);
   });
 
   document.addEventListener('keydown', (event) => {

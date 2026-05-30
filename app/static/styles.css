@@ -857,3 +857,14 @@ body.menu-open {
     width: min(86vw, 320px) !important;
   }
 }
+
+
+/* Fix navegación desde menú lateral */
+html { scroll-behavior: smooth; }
+.section { scroll-margin-top: 96px; }
+.main-nav a { cursor: pointer !important; }
+.main-nav a.active {
+  color: #170703 !important;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent)) !important;
+  border-color: rgba(255,176,0,.72) !important;
+}
