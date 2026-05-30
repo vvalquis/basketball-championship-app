@@ -152,6 +152,55 @@ function closeMatchDetail() {
   document.body.classList.remove('modal-is-open');
 }
 
+async function openTeamPlayers(teamId) {
+  const modal = document.getElementById('matchDetailModal');
+  const content = document.getElementById('matchDetailContent');
+  if (!modal || !content) return;
+
+  modal.classList.add('modal-open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-is-open');
+  content.innerHTML = `
+    <div class="modal-header-block">
+      <span class="badge">Plantel</span>
+      <h2 id="matchDetailTitle">Jugadores del equipo</h2>
+      <p>Listado de jugadores registrados para este equipo.</p>
+    </div>
+    <div class="loading-detail">Cargando jugadores...</div>
+  `;
+
+  try {
+    const team = await api(`/api/teams/${encodeURIComponent(teamId)}`);
+    const players = Array.isArray(team.players) ? team.players : [];
+    const safeTeamName = escapeHtml(team.name || 'Equipo');
+    const rows = players.length ? players.map(player => `
+      <tr>
+        <td><strong>#${escapeHtml(player.jersey_number || '-')}</strong></td>
+        <td>${escapeHtml(player.first_name || '')} ${escapeHtml(player.last_name || '')}</td>
+        <td>${escapeHtml(player.position || '-')}</td>
+      </tr>
+    `).join('') : '<tr><td colspan="3">Este equipo aún no tiene jugadores registrados.</td></tr>';
+
+    content.innerHTML = `
+      <div class="modal-header-block">
+        <span class="badge">Plantel</span>
+        <h2 id="matchDetailTitle">Jugadores de ${safeTeamName}</h2>
+        <p>Listado de jugadores registrados para este equipo.</p>
+      </div>
+      <div class="table-wrap detail-table-wrap team-players-table-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Jugador</th><th>Posición</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+  } catch (error) {
+    content.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
+  }
+}
+
 function periodLabel(number) {
   const n = Number(number);
   if (n === 1) return '1.er tiempo / cuarto';
@@ -297,8 +346,10 @@ async function loadTeams() {
       <article class="card team-card">
         ${teamLogo(team)}
         <h3>${escapeHtml(team.name)}</h3>
-        <p>Head coach: ${escapeHtml(team.coach_name || 'No registrado')}</p>
-        <span class="badge">${escapeHtml(team.status || 'ACTIVE')}</span>
+        <p class="team-delegate"><strong>Delegado:</strong> ${escapeHtml(team.coach_name || 'No registrado')}</p>
+        <div class="team-actions">
+          <button class="players-button" type="button" onclick="openTeamPlayers(${team.id})">Jugadores</button>
+        </div>
       </article>
     `).join('') || '<p>No hay equipos registrados.</p>';
 

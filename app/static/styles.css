@@ -976,3 +976,56 @@ footer p { color: var(--muted); }
   .championship-control { width: 100%; }
   .championship-control select { width: 100%; }
 }
+
+/* =========================================================
+   Ajustes Equipos Participantes: delegado + botón jugadores
+   ========================================================= */
+.team-delegate {
+  width: 100%;
+  margin: .45rem 0 .85rem;
+  color: #ffe8c2;
+  font-size: .92rem;
+  line-height: 1.35;
+}
+.team-delegate strong {
+  color: var(--accent-2);
+  text-transform: uppercase;
+  letter-spacing: .045em;
+  font-size: .78rem;
+}
+.team-actions {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: .35rem;
+}
+.players-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  width: 100%;
+  max-width: 170px;
+  padding: .68rem .95rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255,176,0,.98), rgba(255,122,0,.94));
+  color: #160705;
+  font-size: .78rem;
+  font-weight: 1000;
+  box-shadow: 0 12px 26px rgba(255,122,0,.22);
+}
+.players-button::before {
+  content: "👥";
+  font-size: .95rem;
+}
+.team-players-table-wrap table {
+  min-width: 520px;
+}
+@media (max-width: 600px) {
+  .players-button {
+    max-width: none;
+  }
+  .team-players-table-wrap table {
+    min-width: 420px;
+  }
+}
