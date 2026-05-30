@@ -241,7 +241,7 @@ class BasketballHandler(BaseHTTPRequestHandler):
                 return self._send_json([])
 
             data = db.select("player_match_stats", {
-                "select": "team_id,points,rebounds,assists,steals,blocks,fouls,players(first_name,last_name,jersey_number),teams(name)",
+                "select": "team_id,points,points_triple,rebounds,assists,steals,blocks,fouls,players(first_name,last_name,jersey_number),teams(name)",
                 "team_id": f"in.({','.join(sorted(allowed_team_ids))})",
                 "order": "points.desc"
             })
@@ -263,8 +263,9 @@ class BasketballHandler(BaseHTTPRequestHandler):
                         "steals": 0,
                         "blocks": 0,
                         "fouls": 0,
+                        "points_triple": 0,
                     }
-                for field in ["points", "rebounds", "assists", "steals", "blocks", "fouls"]:
+                for field in ["points", "points_triple", "rebounds", "assists", "steals", "blocks", "fouls"]:
                     aggregated[key][field] += int(row.get(field) or 0)
             ranking = sorted(aggregated.values(), key=lambda item: item["points"], reverse=True)
             return self._send_json(ranking)

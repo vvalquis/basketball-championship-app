@@ -246,9 +246,10 @@ async function openMatchDetail(matchId) {
           <td>${row.rebounds ?? 0}</td>
           <td>${row.assists ?? 0}</td>
           <td>${row.fouls ?? 0}</td>
+          <td>${row.points_triple ?? 0}</td>
         </tr>
       `;
-    }).join('') : '<tr><td colspan="6">Aún no hay estadísticas individuales registradas.</td></tr>';
+    }).join('') : '<tr><td colspan="7">Aún no hay estadísticas individuales registradas.</td></tr>';
 
     content.innerHTML = `
       <div class="modal-header-block">
@@ -274,7 +275,7 @@ async function openMatchDetail(matchId) {
       <h3>Estadísticas de jugadores</h3>
       <div class="table-wrap detail-table-wrap">
         <table>
-          <thead><tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>REB</th><th>AST</th><th>FALTAS</th></tr></thead>
+          <thead><tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>REB</th><th>AST</th><th>FALTAS</th><th>PTS (3)</th></tr></thead>
           <tbody>${statsHtml}</tbody>
         </table>
       </div>
@@ -428,8 +429,9 @@ async function loadStats() {
         <td>${s.steals}</td>
         <td>${s.blocks}</td>
         <td>${s.fouls}</td>
+        <td>${s.points_triple ?? 0}</td>
       </tr>
-    `).join('') || '<tr><td colspan="8">No hay estadísticas registradas.</td></tr>';
+    `).join('') || '<tr><td colspan="9">No hay estadísticas registradas.</td></tr>';
   } catch (error) { showError('statsTable', error); }
 }
 

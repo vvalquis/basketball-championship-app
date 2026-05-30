@@ -82,6 +82,7 @@ CREATE TABLE IF NOT EXISTS player_match_stats (
     player_id INTEGER NOT NULL,
     team_id INTEGER NOT NULL,
     points INTEGER DEFAULT 0,
+    points_triple INTEGER DEFAULT 0,
     rebounds INTEGER DEFAULT 0,
     assists INTEGER DEFAULT 0,
     steals INTEGER DEFAULT 0,
