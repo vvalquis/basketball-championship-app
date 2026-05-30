@@ -899,3 +899,52 @@ footer p { color: var(--muted); }
   .main-nav.side-menu,
   .main-nav { width: min(88vw, 320px) !important; }
 }
+
+/* Selector de campeonato en la parte superior */
+.championship-control {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .65rem .8rem;
+  border: 1px solid rgba(255, 176, 0, .34);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,122,0,.18), rgba(0,0,0,.35));
+  box-shadow: 0 10px 28px rgba(0,0,0,.24);
+  white-space: nowrap;
+}
+.championship-control label {
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #ffcf86;
+}
+.championship-control select {
+  min-width: 230px;
+  max-width: 360px;
+  color: #fff7ed;
+  background: rgba(8, 4, 4, .96);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 12px;
+  padding: .55rem .8rem;
+  font-weight: 850;
+  outline: none;
+}
+.championship-control select:focus {
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px rgba(255,176,0,.18);
+}
+
+@media (max-width: 820px) {
+  .topbar {
+    gap: .8rem;
+  }
+  .championship-control {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .championship-control select {
+    min-width: 0;
+    width: min(100%, 260px);
+  }
+}

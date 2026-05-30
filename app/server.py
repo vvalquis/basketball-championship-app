@@ -234,9 +234,21 @@ class BasketballHandler(BaseHTTPRequestHandler):
             return self._send_json(data)
 
         if path == "/api/stats/players":
-            data = db.select("player_match_stats", {"select": "points,rebounds,assists,steals,blocks,fouls,players(first_name,last_name,jersey_number),teams(name)", "order": "points.desc"})
+            championship_teams = db.select("teams", {"select": "id", "championship_id": f"eq.{championship_id}"})
+            allowed_team_ids = {str(team.get("id")) for team in championship_teams}
+
+            if not allowed_team_ids:
+                return self._send_json([])
+
+            data = db.select("player_match_stats", {
+                "select": "team_id,points,rebounds,assists,steals,blocks,fouls,players(first_name,last_name,jersey_number),teams(name)",
+                "team_id": f"in.({','.join(sorted(allowed_team_ids))})",
+                "order": "points.desc"
+            })
             aggregated: Dict[str, Dict[str, Any]] = {}
             for row in data:
+                if str(row.get("team_id")) not in allowed_team_ids:
+                    continue
                 player = row.get("players") or {}
                 team = row.get("teams") or {}
                 key = f"{player.get('first_name','')} {player.get('last_name','')}|{team.get('name','')}"

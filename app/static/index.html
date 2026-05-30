@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fénix Rímac Basketball League</title>
-  <link rel="stylesheet" href="/styles.css?v=20260530-recovery-menu" />
+  <link rel="stylesheet" href="/styles.css?v=20260530-championship-select" />
 </head>
 <body>
   <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
@@ -18,6 +18,12 @@
         <h1>🔥 Fénix Rímac Basketball League</h1>
         <p>Resultados, posiciones y estadísticas con estética profesional</p>
       </div>
+    </div>
+    <div class="championship-control" aria-label="Selector de campeonato">
+      <label for="championshipSelect">Campeonato</label>
+      <select id="championshipSelect">
+        <option value="1">Cargando campeonatos...</option>
+      </select>
     </div>
   </header>
 
@@ -134,6 +140,6 @@
     <p>Fénix Rímac Basketball League</p>
   </footer>
 
-  <script src="/app.js?v=20260530-recovery-menu"></script>
+  <script src="/app.js?v=20260530-championship-select"></script>
 </body>
 </html>

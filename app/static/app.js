@@ -1,4 +1,19 @@
-const CHAMPIONSHIP_ID = 1;
+let currentChampionshipId = Number(localStorage.getItem('selectedChampionshipId') || 1);
+let availableChampionships = [];
+
+function getChampionshipId() {
+  return Number(currentChampionshipId || 1);
+}
+
+function setChampionshipId(value) {
+  currentChampionshipId = Number(value || 1);
+  localStorage.setItem('selectedChampionshipId', String(currentChampionshipId));
+}
+
+function selectedChampionshipLabel() {
+  const item = availableChampionships.find(champ => Number(champ.id) === Number(currentChampionshipId));
+  return item ? `${item.name}${item.season ? ' · ' + item.season : ''}` : `Campeonato ${currentChampionshipId}`;
+}
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -227,9 +242,45 @@ function setupMatchDetailModal() {
   });
 }
 
+async function loadChampionships() {
+  const select = document.getElementById('championshipSelect');
+  if (!select) return;
+
+  try {
+    availableChampionships = await api('/api/championships');
+
+    if (!Array.isArray(availableChampionships) || availableChampionships.length === 0) {
+      select.innerHTML = '<option value="1">Campeonato principal</option>';
+      setChampionshipId(1);
+      return;
+    }
+
+    const exists = availableChampionships.some(champ => Number(champ.id) === Number(currentChampionshipId));
+    if (!exists) setChampionshipId(availableChampionships[0].id);
+
+    select.innerHTML = availableChampionships.map(champ => {
+      const label = `${escapeHtml(champ.name || 'Campeonato')} ${champ.season ? '· ' + escapeHtml(champ.season) : ''}`;
+      return `<option value="${champ.id}" ${Number(champ.id) === Number(currentChampionshipId) ? 'selected' : ''}>${label}</option>`;
+    }).join('');
+
+    select.addEventListener('change', async (event) => {
+      setChampionshipId(event.target.value);
+      await loadAll();
+      navigateToSection('inicio');
+    });
+  } catch (error) {
+    select.innerHTML = `<option value="${getChampionshipId()}">Campeonato ${getChampionshipId()}</option>`;
+    console.error('No se pudieron cargar los campeonatos:', error);
+  }
+}
+
 async function loadSummary() {
   try {
-    const summary = await api(`/api/summary?championship_id=${CHAMPIONSHIP_ID}`);
+    const summary = await api(`/api/summary?championship_id=${getChampionshipId()}`);
+    const heroText = document.querySelector('#inicio .hero-title-row p');
+    if (heroText) {
+      heroText.textContent = `Campeonato seleccionado: ${selectedChampionshipLabel()}. Información actualizada según equipos, jugadores, partidos, posiciones y rankings registrados.`;
+    }
     document.getElementById('summaryCards').innerHTML = `
       <div class="card"><h3>Equipos</h3><div class="metric">${summary.teams}</div><p>Franquicias participantes</p></div>
       <div class="card"><h3>Jugadores</h3><div class="metric">${summary.players}</div><p>Planteles registrados</p></div>
@@ -241,7 +292,7 @@ async function loadSummary() {
 
 async function loadTeams() {
   try {
-    const teams = await api(`/api/teams?championship_id=${CHAMPIONSHIP_ID}`);
+    const teams = await api(`/api/teams?championship_id=${getChampionshipId()}`);
     document.getElementById('teamsContainer').innerHTML = teams.map(team => `
       <article class="card team-card">
         ${teamLogo(team)}
@@ -261,7 +312,7 @@ async function loadTeams() {
 
 async function loadPlayers() {
   try {
-    const players = await api(`/api/players?championship_id=${CHAMPIONSHIP_ID}`);
+    const players = await api(`/api/players?championship_id=${getChampionshipId()}`);
     document.getElementById('playersTable').innerHTML = players.map(p => `
       <tr>
         <td><strong>#${p.jersey_number}</strong></td>
@@ -275,7 +326,7 @@ async function loadPlayers() {
 
 async function loadMatches() {
   try {
-    const matches = await api(`/api/matches?championship_id=${CHAMPIONSHIP_ID}`);
+    const matches = await api(`/api/matches?championship_id=${getChampionshipId()}`);
     document.getElementById('matchesContainer').innerHTML = matches.map(m => `
       <article class="match-card">
         <div>
@@ -297,7 +348,7 @@ async function loadMatches() {
 
 async function loadStandings() {
   try {
-    const standings = await api(`/api/standings?championship_id=${CHAMPIONSHIP_ID}`);
+    const standings = await api(`/api/standings?championship_id=${getChampionshipId()}`);
     document.getElementById('standingsTable').innerHTML = standings.map((s, index) => `
       <tr>
         <td><strong>${index + 1}. ${escapeHtml(s.team_name)}</strong></td>
@@ -315,7 +366,7 @@ async function loadStandings() {
 
 async function loadStats() {
   try {
-    const stats = await api('/api/stats/players');
+    const stats = await api(`/api/stats/players?championship_id=${getChampionshipId()}`);
     document.getElementById('statsTable').innerHTML = stats.map(s => `
       <tr>
         <td><strong>#${s.jersey_number || '-'} ${escapeHtml(s.player_name)}</strong></td>
@@ -335,9 +386,10 @@ async function loadAll() {
   await Promise.all([loadSummary(), loadTeams(), loadPlayers(), loadMatches(), loadStandings(), loadStats()]);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   setupResponsiveMenu();
   setupSectionToggles();
   setupMatchDetailModal();
-  loadAll();
+  await loadChampionships();
+  await loadAll();
 });
