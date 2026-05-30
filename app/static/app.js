@@ -12,19 +12,33 @@ async function api(path, options = {}) {
   return data;
 }
 
+function escapeHtml(value = '') {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
 function showError(containerId, error) {
   const el = document.getElementById(containerId);
-  if (el) el.innerHTML = `<div class="error">${error.message}</div>`;
+  if (el) el.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
+}
+
+function teamLogo(team) {
+  const name = escapeHtml(team?.name || 'Equipo');
+  return `<div class="team-logo">${team?.logo_url ? `<img src="${escapeHtml(team.logo_url)}" alt="Logo ${name}" loading="lazy" />` : '🏀'}</div>`;
 }
 
 async function loadSummary() {
   try {
     const summary = await api(`/api/summary?championship_id=${CHAMPIONSHIP_ID}`);
     document.getElementById('summaryCards').innerHTML = `
-      <div class="card"><h3>Equipos</h3><div class="metric">${summary.teams}</div></div>
-      <div class="card"><h3>Jugadores</h3><div class="metric">${summary.players}</div></div>
+      <div class="card"><h3>Equipos</h3><div class="metric">${summary.teams}</div><p>Franquicias participantes</p></div>
+      <div class="card"><h3>Jugadores</h3><div class="metric">${summary.players}</div><p>Planteles registrados</p></div>
       <div class="card"><h3>Partidos</h3><div class="metric">${summary.matches}</div><p>${summary.finished_matches} finalizados</p></div>
-      <div class="card"><h3>Líder</h3><div class="metric">${summary.leader?.team_name || '-'}</div><p>${summary.leader?.championship_points || 0} puntos</p></div>
+      <div class="card"><h3>Líder</h3><div class="metric">${escapeHtml(summary.leader?.team_name || '-')}</div><p>${summary.leader?.championship_points || 0} puntos</p></div>
     `;
   } catch (error) { showError('summaryCards', error); }
 }
@@ -33,15 +47,15 @@ async function loadTeams() {
   try {
     const teams = await api(`/api/teams?championship_id=${CHAMPIONSHIP_ID}`);
     document.getElementById('teamsContainer').innerHTML = teams.map(team => `
-      <article class="card">
-        <div class="team-logo">${team.logo_url ? `<img src="${team.logo_url}" alt="${team.name}" />` : '🏀'}</div>
-        <h3>${team.name}</h3>
-        <p>Entrenador: ${team.coach_name || 'No registrado'}</p>
-        <span class="badge">${team.status || 'ACTIVE'}</span>
+      <article class="card team-card">
+        ${teamLogo(team)}
+        <h3>${escapeHtml(team.name)}</h3>
+        <p>Head coach: ${escapeHtml(team.coach_name || 'No registrado')}</p>
+        <span class="badge">${escapeHtml(team.status || 'ACTIVE')}</span>
       </article>
     `).join('') || '<p>No hay equipos registrados.</p>';
 
-    const options = teams.map(team => `<option value="${team.id}">${team.name}</option>`).join('');
+    const options = teams.map(team => `<option value="${team.id}">${escapeHtml(team.name)}</option>`).join('');
     document.getElementById('teamSelect').innerHTML = options;
   } catch (error) { showError('teamsContainer', error); }
 }
@@ -51,10 +65,10 @@ async function loadPlayers() {
     const players = await api(`/api/players?championship_id=${CHAMPIONSHIP_ID}`);
     document.getElementById('playersTable').innerHTML = players.map(p => `
       <tr>
-        <td>${p.jersey_number}</td>
-        <td>${p.first_name} ${p.last_name}</td>
-        <td>${p.teams?.name || '-'}</td>
-        <td>${p.position || '-'}</td>
+        <td><strong>#${p.jersey_number}</strong></td>
+        <td>${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</td>
+        <td>${escapeHtml(p.teams?.name || '-')}</td>
+        <td>${escapeHtml(p.position || '-')}</td>
       </tr>
     `).join('') || '<tr><td colspan="4">No hay jugadores registrados.</td></tr>';
   } catch (error) { showError('playersTable', error); }
@@ -66,16 +80,16 @@ async function loadMatches() {
     document.getElementById('matchesContainer').innerHTML = matches.map(m => `
       <article class="match-card">
         <div>
-          <div class="team">${m.home_team?.name || 'Local'}</div>
-          <p>${m.match_date || ''} ${m.match_time || ''}<br>${m.venue || ''}</p>
+          <div class="team">${escapeHtml(m.home_team?.name || 'Local')}</div>
+          <p>${escapeHtml(m.match_date || '')} ${escapeHtml(m.match_time || '')}<br>${escapeHtml(m.venue || '')}</p>
         </div>
         <div>
           <div class="score">${m.home_score} - ${m.away_score}</div>
-          <span class="badge">${m.status}</span>
+          <span class="badge">${escapeHtml(m.status)}</span>
         </div>
         <div>
-          <div class="team">${m.away_team?.name || 'Visitante'}</div>
-          <p><a href="/api/matches/${m.id}" target="_blank">Ver detalle JSON</a></p>
+          <div class="team">${escapeHtml(m.away_team?.name || 'Visitante')}</div>
+          <p><a href="/api/matches/${m.id}" target="_blank" rel="noopener">Ver detalle JSON</a></p>
         </div>
       </article>
     `).join('') || '<p>No hay partidos registrados.</p>';
@@ -85,9 +99,9 @@ async function loadMatches() {
 async function loadStandings() {
   try {
     const standings = await api(`/api/standings?championship_id=${CHAMPIONSHIP_ID}`);
-    document.getElementById('standingsTable').innerHTML = standings.map(s => `
+    document.getElementById('standingsTable').innerHTML = standings.map((s, index) => `
       <tr>
-        <td>${s.team_name}</td>
+        <td><strong>${index + 1}. ${escapeHtml(s.team_name)}</strong></td>
         <td>${s.played}</td>
         <td>${s.wins}</td>
         <td>${s.losses}</td>
@@ -105,8 +119,8 @@ async function loadStats() {
     const stats = await api('/api/stats/players');
     document.getElementById('statsTable').innerHTML = stats.map(s => `
       <tr>
-        <td>#${s.jersey_number || '-'} ${s.player_name}</td>
-        <td>${s.team_name || '-'}</td>
+        <td><strong>#${s.jersey_number || '-'} ${escapeHtml(s.player_name)}</strong></td>
+        <td>${escapeHtml(s.team_name || '-')}</td>
         <td>${s.points}</td>
         <td>${s.rebounds}</td>
         <td>${s.assists}</td>
