@@ -6,6 +6,7 @@ let playersData = [];
 let playersCurrentPage = 1;
 let statsData = [];
 let statsCurrentPage = 1;
+let activeMatchesTab = 'scheduled';
 
 function getChampionshipId() {
   return Number(currentChampionshipId || 1);
@@ -263,7 +264,17 @@ async function openMatchDetail(matchId) {
     const homeName = escapeHtml(match.home_team?.name || 'Local');
     const awayName = escapeHtml(match.away_team?.name || 'Visitante');
     const periods = Array.isArray(match.periods) ? match.periods : [];
-    const playerStats = Array.isArray(match.player_stats) ? match.player_stats : [];
+    const playerStats = (Array.isArray(match.player_stats) ? match.player_stats : []).slice().sort((a, b) => {
+      const pointsDiff = Number(b.points || 0) - Number(a.points || 0);
+      if (pointsDiff) return pointsDiff;
+      const tripleDiff = Number(b.points_triple || 0) - Number(a.points_triple || 0);
+      if (tripleDiff) return tripleDiff;
+      const foulsDiff = Number(b.fouls || 0) - Number(a.fouls || 0);
+      if (foulsDiff) return foulsDiff;
+      const aPlayer = `${a.players?.first_name || ''} ${a.players?.last_name || ''}`.trim().toLowerCase();
+      const bPlayer = `${b.players?.first_name || ''} ${b.players?.last_name || ''}`.trim().toLowerCase();
+      return aPlayer.localeCompare(bPlayer, 'es');
+    });
 
     const periodsHtml = periods.length ? periods.map(period => `
       <tr>
@@ -281,10 +292,10 @@ async function openMatchDetail(matchId) {
           <td>#${escapeHtml(player.jersey_number || '-')} ${escapeHtml(player.first_name || '')} ${escapeHtml(player.last_name || '')}</td>
           <td>${escapeHtml(team.name || '-')}</td>
           <td>${row.points ?? 0}</td>
-          <td>${row.rebounds ?? 0}</td>
-          <td>${row.assists ?? 0}</td>
           <td>${row.fouls ?? 0}</td>
           <td>${row.points_triple ?? 0}</td>
+          <td>${row.rebounds ?? 0}</td>
+          <td>${row.assists ?? 0}</td>
         </tr>
       `;
     }).join('') : '<tr><td colspan="7">Aún no hay estadísticas individuales registradas.</td></tr>';
@@ -313,7 +324,7 @@ async function openMatchDetail(matchId) {
       <h3>Estadísticas de jugadores</h3>
       <div class="table-wrap detail-table-wrap">
         <table>
-          <thead><tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>REB</th><th>AST</th><th>FALTAS</th><th>PTS (3)</th></tr></thead>
+          <thead><tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>FALTAS</th><th>PTS (3)</th><th>REB</th><th>AST</th></tr></thead>
           <tbody>${statsHtml}</tbody>
         </table>
       </div>
@@ -464,20 +475,47 @@ function matchStatusLabel(status) {
   return labels[value] || status || '-';
 }
 
-function getMatchTimestamp(match) {
-  const date = match?.match_date || '1900-01-01';
+function getMatchDateValue(match) {
+  return match?.match_date || '1900-01-01';
+}
+
+function getMatchTimeValue(match) {
   const time = match?.match_time || '00:00:00';
-  const normalizedTime = String(time).length === 5 ? `${time}:00` : time;
-  const timestamp = Date.parse(`${date}T${normalizedTime}`);
-  return Number.isNaN(timestamp) ? 0 : timestamp;
+  return String(time).length === 5 ? `${time}:00` : time;
+}
+
+function sortMatchesByDateDescTimeAsc(items) {
+  return (Array.isArray(items) ? items : []).slice().sort((a, b) => {
+    const dateCompare = getMatchDateValue(b).localeCompare(getMatchDateValue(a));
+    if (dateCompare !== 0) return dateCompare;
+    return getMatchTimeValue(a).localeCompare(getMatchTimeValue(b));
+  });
+}
+
+function isFinishedMatch(match) {
+  return String(match?.status || '').toUpperCase() === 'FINISHED';
+}
+
+function setupMatchTabs() {
+  document.querySelectorAll('[data-match-tab]').forEach((button) => {
+    button.addEventListener('click', () => {
+      activeMatchesTab = button.dataset.matchTab || 'scheduled';
+      document.querySelectorAll('[data-match-tab]').forEach((tab) => {
+        const isActive = tab.dataset.matchTab === activeMatchesTab;
+        tab.classList.toggle('active', isActive);
+        tab.setAttribute('aria-selected', String(isActive));
+      });
+      loadMatches();
+    });
+  });
 }
 
 async function loadMatches() {
   try {
     const matches = await api(`/api/matches?championship_id=${getChampionshipId()}`);
-    // Orden descendente: fecha mayor a menor y, dentro de la misma fecha, hora mayor a menor.
-    matches.sort((a, b) => getMatchTimestamp(b) - getMatchTimestamp(a));
-    document.getElementById('matchesContainer').innerHTML = matches.map(m => `
+    const filteredMatches = sortMatchesByDateDescTimeAsc(matches.filter(m => activeMatchesTab === 'finished' ? isFinishedMatch(m) : !isFinishedMatch(m)));
+    const emptyMessage = activeMatchesTab === 'finished' ? 'No hay partidos finalizados registrados.' : 'No hay partidos programados registrados.';
+    document.getElementById('matchesContainer').innerHTML = filteredMatches.map(m => `
       <article class="match-card match-card-modern">
         <div class="match-teams-panel">
           ${matchTeamRow(m.home_team, m.home_score, 'Local')}
@@ -493,7 +531,7 @@ async function loadMatches() {
           <button class="detail-link-button" type="button" onclick="openMatchDetail(${m.id})">Ver detalle</button>
         </aside>
       </article>
-    `).join('') || '<p>No hay partidos registrados.</p>';
+    `).join('') || `<p>${emptyMessage}</p>`;
   } catch (error) { showError('matchesContainer', error); }
 }
 
@@ -560,6 +598,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupResponsiveMenu();
   setupSectionToggles();
   setupMatchDetailModal();
+  setupMatchTabs();
   await loadChampionships();
   await loadAll();
 });

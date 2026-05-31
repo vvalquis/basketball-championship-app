@@ -197,14 +197,13 @@ class BasketballHandler(BaseHTTPRequestHandler):
             return self._send_json(data)
 
         if path == "/api/matches":
-            data = db.select("matches", {"select": "*", "championship_id": f"eq.{championship_id}", "order": "match_date.desc,match_time.desc"})
-            # Refuerzo del orden en backend: fecha y hora de mayor a menor.
-            # Esto evita diferencias si Supabase/PostgREST devuelve horas nulas o formatos distintos.
+            data = db.select("matches", {"select": "*", "championship_id": f"eq.{championship_id}", "order": "match_date.desc,match_time.asc"})
+            # Refuerzo del orden en backend: fecha mayor a menor y hora menor a mayor.
             data = sorted(
                 data,
-                key=lambda m: f"{m.get('match_date') or '1900-01-01'} {m.get('match_time') or '00:00:00'}",
-                reverse=True
+                key=lambda m: (m.get("match_date") or "1900-01-01", m.get("match_time") or "00:00:00"),
             )
+            data = sorted(data, key=lambda m: m.get("match_date") or "1900-01-01", reverse=True)
             team_ids = sorted({str(m.get("home_team_id")) for m in data if m.get("home_team_id")} | {str(m.get("away_team_id")) for m in data if m.get("away_team_id")})
             teams_by_id = {}
             if team_ids:
@@ -231,7 +230,7 @@ class BasketballHandler(BaseHTTPRequestHandler):
             response["away_team"] = teams_by_id.get(str(response.get("away_team_id")), {"name": "Visitante"})
             response["winner_team"] = teams_by_id.get(str(response.get("winner_team_id"))) if response.get("winner_team_id") else None
             periods = db.select("match_periods", {"select": "*", "match_id": f"eq.{match_id}", "order": "period_number.asc"})
-            stats = db.select("player_match_stats", {"select": "*,players(first_name,last_name,jersey_number),teams(name)", "match_id": f"eq.{match_id}", "order": "points.desc"})
+            stats = db.select("player_match_stats", {"select": "*,players(first_name,last_name,jersey_number),teams(name)", "match_id": f"eq.{match_id}", "order": "points.desc,points_triple.desc,fouls.desc"})
             response["periods"] = periods
             response["player_stats"] = stats
             return self._send_json(response)

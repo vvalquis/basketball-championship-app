@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fénix Rímac Basketball League</title>
-  <link rel="stylesheet" href="/styles.css?v=20260530-equipos-orden-ranking" />
+  <link rel="stylesheet" href="/styles.css?v=20260531-tabs-detail-stats" />
 </head>
 <body>
   <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
@@ -69,6 +69,10 @@
         <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
       </div>
       <div class="section-content">
+        <div class="matches-tabs" role="tablist" aria-label="Filtrar calendario y resultados">
+          <button id="scheduledTab" class="matches-tab active" type="button" data-match-tab="scheduled" role="tab" aria-selected="true">Programados</button>
+          <button id="finishedTab" class="matches-tab" type="button" data-match-tab="finished" role="tab" aria-selected="false">Finalizados</button>
+        </div>
         <div id="matchesContainer" class="match-list"></div>
       </div>
     </section>
@@ -140,6 +144,6 @@
     <p>Fénix Rímac Basketball League</p>
   </footer>
 
-  <script src="/app.js?v=20260530-equipos-orden-ranking"></script>
+  <script src="/app.js?v=20260531-tabs-detail-stats"></script>
 </body>
 </html>
