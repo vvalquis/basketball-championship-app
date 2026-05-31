@@ -602,3 +602,95 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadChampionships();
   await loadAll();
 });
+
+/* Fix menú lateral al cambiar orientación en celular/tablet.
+   Pegar al final de app/static/app.js o cargar después de app.js. */
+(function () {
+  function closeSideMenu() {
+    const body = document.body;
+    const menuButton = document.getElementById('mobileMenuBtn');
+    const overlay = document.getElementById('menuOverlay');
+    body.classList.remove('menu-open');
+    body.style.overflow = '';
+    menuButton?.setAttribute('aria-expanded', 'false');
+    overlay?.setAttribute('aria-hidden', 'true');
+  }
+
+  function openSideMenu() {
+    const body = document.body;
+    const menuButton = document.getElementById('mobileMenuBtn');
+    const overlay = document.getElementById('menuOverlay');
+    body.classList.add('menu-open');
+    body.style.overflow = 'hidden';
+    menuButton?.setAttribute('aria-expanded', 'true');
+    overlay?.setAttribute('aria-hidden', 'false');
+  }
+
+  function goToSectionFromMenu(href) {
+    const id = String(href || '').replace('#', '');
+    const section = document.getElementById(id);
+    if (!section) return;
+
+    if (section.classList.contains('section-collapsed')) {
+      section.classList.remove('section-collapsed');
+      const button = section.querySelector('.section-toggle');
+      const icon = button?.querySelector('.toggle-icon');
+      button?.setAttribute('aria-expanded', 'true');
+      if (icon) icon.textContent = '⌃';
+    }
+
+    setTimeout(function () {
+      const top = Math.max(0, section.getBoundingClientRect().top + window.scrollY - 82);
+      window.scrollTo({ top: top, behavior: 'smooth' });
+      history.replaceState?.(null, '', '#' + id);
+    }, 120);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const menuButton = document.getElementById('mobileMenuBtn');
+    const closeButton = document.getElementById('closeMenuBtn');
+    const overlay = document.getElementById('menuOverlay');
+    const nav = document.getElementById('mainNav');
+
+    menuButton?.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      document.body.classList.contains('menu-open') ? closeSideMenu() : openSideMenu();
+    });
+
+    closeButton?.addEventListener('click', function (event) {
+      event.preventDefault();
+      closeSideMenu();
+    });
+
+    overlay?.addEventListener('click', closeSideMenu);
+
+    nav?.addEventListener('click', function (event) {
+      const link = event.target.closest('a[href^="#"]');
+      if (!link) return;
+      event.preventDefault();
+      const href = link.getAttribute('href');
+      closeSideMenu();
+      goToSectionFromMenu(href);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') closeSideMenu();
+    });
+
+    // Corrección clave: al rotar celular/tablet, se cierra el menú y se recalcula layout.
+    window.addEventListener('orientationchange', function () {
+      closeSideMenu();
+      setTimeout(closeSideMenu, 250);
+    });
+
+    let resizeTimer;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        closeSideMenu();
+      }, 180);
+    });
+  });
+})();
+
