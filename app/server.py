@@ -198,6 +198,13 @@ class BasketballHandler(BaseHTTPRequestHandler):
 
         if path == "/api/matches":
             data = db.select("matches", {"select": "*", "championship_id": f"eq.{championship_id}", "order": "match_date.desc,match_time.desc"})
+            # Refuerzo del orden en backend: fecha y hora de mayor a menor.
+            # Esto evita diferencias si Supabase/PostgREST devuelve horas nulas o formatos distintos.
+            data = sorted(
+                data,
+                key=lambda m: f"{m.get('match_date') or '1900-01-01'} {m.get('match_time') or '00:00:00'}",
+                reverse=True
+            )
             team_ids = sorted({str(m.get("home_team_id")) for m in data if m.get("home_team_id")} | {str(m.get("away_team_id")) for m in data if m.get("away_team_id")})
             teams_by_id = {}
             if team_ids:

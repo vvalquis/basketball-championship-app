@@ -464,10 +464,19 @@ function matchStatusLabel(status) {
   return labels[value] || status || '-';
 }
 
+function getMatchTimestamp(match) {
+  const date = match?.match_date || '1900-01-01';
+  const time = match?.match_time || '00:00:00';
+  const normalizedTime = String(time).length === 5 ? `${time}:00` : time;
+  const timestamp = Date.parse(`${date}T${normalizedTime}`);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
 async function loadMatches() {
   try {
     const matches = await api(`/api/matches?championship_id=${getChampionshipId()}`);
-    matches.sort((a, b) => `${b.match_date || ''} ${b.match_time || ''}`.localeCompare(`${a.match_date || ''} ${a.match_time || ''}`));
+    // Orden descendente: fecha mayor a menor y, dentro de la misma fecha, hora mayor a menor.
+    matches.sort((a, b) => getMatchTimestamp(b) - getMatchTimestamp(a));
     document.getElementById('matchesContainer').innerHTML = matches.map(m => `
       <article class="match-card match-card-modern">
         <div class="match-teams-panel">
