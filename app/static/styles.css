@@ -1029,3 +1029,32 @@ footer p { color: var(--muted); }
     min-width: 420px;
   }
 }
+
+
+/* Ajustes solicitados: equipos, orden visual y cards */
+.team-card-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: .85rem;
+}
+.team-card-header .team-logo {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+.team-card-header h3 {
+  margin: 0;
+  line-height: 1.1;
+}
+.team-card > h3 {
+  margin-top: 0;
+}
+@media (max-width: 520px) {
+  .team-card-header {
+    gap: .75rem;
+  }
+  .team-card-header h3 {
+    font-size: 1rem;
+  }
+}

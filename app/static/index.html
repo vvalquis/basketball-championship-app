@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fénix Rímac Basketball League</title>
-  <link rel="stylesheet" href="/styles.css?v=20260530-championship-default-first" />
+  <link rel="stylesheet" href="/styles.css?v=20260530-equipos-orden-ranking" />
 </head>
 <body>
   <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
@@ -34,10 +34,10 @@
     </div>
     <a href="#inicio" data-section-link="inicio">Inicio</a>
     <a href="#equipos" data-section-link="equipos">Equipos</a>
-    <a href="#jugadores" data-section-link="jugadores">Jugadores</a>
     <a href="#partidos" data-section-link="partidos">Partidos</a>
     <a href="#posiciones" data-section-link="posiciones">Posiciones</a>
     <a href="#stats" data-section-link="stats">Estadísticas</a>
+    <a href="#jugadores" data-section-link="jugadores">Jugadores</a>
   </nav>
 
   <main>
@@ -56,30 +56,10 @@
     <section id="equipos" class="section section-collapsible">
       <div class="section-title-row">
         <h2>Equipos participantes</h2>
-        <div class="section-actions">
-          <button onclick="loadAll()" type="button">Actualizar</button>
-          <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
-        </div>
-      </div>
-      <div class="section-content">
-        <div id="teamsContainer" class="cards"></div>
-      </div>
-    </section>
-
-    <section id="jugadores" class="section section-collapsible">
-      <div class="section-title-row">
-        <h2>Jugadores</h2>
         <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
       </div>
       <div class="section-content">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>#</th><th>Jugador</th><th>Equipo</th><th>Posición</th></tr>
-            </thead>
-            <tbody id="playersTable"></tbody>
-          </table>
-        </div>
+        <div id="teamsContainer" class="cards"></div>
       </div>
     </section>
 
@@ -119,13 +99,31 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>REB</th><th>AST</th><th>ROB</th><th>BLK</th><th>FALTAS</th><th>PTS (3)</th></tr>
+              <tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>FALTAS</th><th>PTS (3)</th><th>REB</th><th>AST</th><th>ROB</th><th>BLK</th></tr>
             </thead>
             <tbody id="statsTable"></tbody>
           </table>
         </div>
       </div>
     </section>
+    <section id="jugadores" class="section section-collapsible">
+      <div class="section-title-row">
+        <h2>Jugadores</h2>
+        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+      </div>
+      <div class="section-content">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Jugador</th><th>Equipo</th><th>Posición</th></tr>
+            </thead>
+            <tbody id="playersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+
   </main>
 
   <div id="matchDetailModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="matchDetailTitle">
@@ -140,6 +138,6 @@
     <p>Fénix Rímac Basketball League</p>
   </footer>
 
-  <script src="/app.js?v=20260530-championship-default-first"></script>
+  <script src="/app.js?v=20260530-equipos-orden-ranking"></script>
 </body>
 </html>

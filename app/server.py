@@ -197,7 +197,7 @@ class BasketballHandler(BaseHTTPRequestHandler):
             return self._send_json(data)
 
         if path == "/api/matches":
-            data = db.select("matches", {"select": "*", "championship_id": f"eq.{championship_id}", "order": "match_date.asc,match_time.asc"})
+            data = db.select("matches", {"select": "*", "championship_id": f"eq.{championship_id}", "order": "match_date.desc,match_time.desc"})
             team_ids = sorted({str(m.get("home_team_id")) for m in data if m.get("home_team_id")} | {str(m.get("away_team_id")) for m in data if m.get("away_team_id")})
             teams_by_id = {}
             if team_ids:

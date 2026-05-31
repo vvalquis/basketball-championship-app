@@ -345,8 +345,10 @@ async function loadTeams() {
     const teams = await api(`/api/teams?championship_id=${getChampionshipId()}`);
     document.getElementById('teamsContainer').innerHTML = teams.map(team => `
       <article class="card team-card">
-        ${teamLogo(team)}
-        <h3>${escapeHtml(team.name)}</h3>
+        <div class="team-card-header">
+          ${teamLogo(team)}
+          <h3>${escapeHtml(team.name)}</h3>
+        </div>
         <p class="team-delegate"><strong>Delegado:</strong> ${escapeHtml(team.coach_name || 'No registrado')}</p>
         <div class="team-actions">
           <button class="players-button" type="button" onclick="openTeamPlayers(${team.id})">Jugadores</button>
@@ -379,6 +381,7 @@ async function loadPlayers() {
 async function loadMatches() {
   try {
     const matches = await api(`/api/matches?championship_id=${getChampionshipId()}`);
+    matches.sort((a, b) => `${b.match_date || ''} ${b.match_time || ''}`.localeCompare(`${a.match_date || ''} ${a.match_time || ''}`));
     document.getElementById('matchesContainer').innerHTML = matches.map(m => `
       <article class="match-card">
         <div>
@@ -424,12 +427,12 @@ async function loadStats() {
         <td><strong>#${s.jersey_number || '-'} ${escapeHtml(s.player_name)}</strong></td>
         <td>${escapeHtml(s.team_name || '-')}</td>
         <td>${s.points}</td>
+        <td>${s.fouls}</td>
+        <td>${s.points_triple ?? 0}</td>
         <td>${s.rebounds}</td>
         <td>${s.assists}</td>
         <td>${s.steals}</td>
         <td>${s.blocks}</td>
-        <td>${s.fouls}</td>
-        <td>${s.points_triple ?? 0}</td>
       </tr>
     `).join('') || '<tr><td colspan="9">No hay estadísticas registradas.</td></tr>';
   } catch (error) { showError('statsTable', error); }
