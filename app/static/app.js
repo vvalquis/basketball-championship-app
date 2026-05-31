@@ -1,6 +1,12 @@
 let currentChampionshipId = null;
 let availableChampionships = [];
 
+const PAGE_SIZE = 5;
+let playersData = [];
+let playersCurrentPage = 1;
+let statsData = [];
+let statsCurrentPage = 1;
+
 function getChampionshipId() {
   return Number(currentChampionshipId || 1);
 }
@@ -38,6 +44,38 @@ function escapeHtml(value = '') {
 function showError(containerId, error) {
   const el = document.getElementById(containerId);
   if (el) el.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
+}
+
+
+function totalPages(items, pageSize = PAGE_SIZE) {
+  return Math.max(1, Math.ceil((Array.isArray(items) ? items.length : 0) / pageSize));
+}
+
+function pageSlice(items, page, pageSize = PAGE_SIZE) {
+  const start = (page - 1) * pageSize;
+  return items.slice(start, start + pageSize);
+}
+
+function renderPagination(containerId, currentPage, pages, onClickName, totalItems) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (!totalItems || totalItems <= PAGE_SIZE) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const pageButtons = Array.from({ length: pages }, (_, i) => {
+    const page = i + 1;
+    return `<button type="button" class="pagination-page ${page === currentPage ? 'active' : ''}" onclick="${onClickName}(${page})" aria-label="Ir a página ${page}" ${page === currentPage ? 'aria-current="page"' : ''}>${page}</button>`;
+  }).join('');
+
+  container.innerHTML = `
+    <button type="button" class="pagination-button" onclick="${onClickName}(${Math.max(1, currentPage - 1)})" ${currentPage === 1 ? 'disabled' : ''}>‹ Anterior</button>
+    <div class="pagination-pages">${pageButtons}</div>
+    <button type="button" class="pagination-button" onclick="${onClickName}(${Math.min(pages, currentPage + 1)})" ${currentPage === pages ? 'disabled' : ''}>Siguiente ›</button>
+    <span class="pagination-summary">${totalItems} registros</span>
+  `;
 }
 
 function teamLogo(team) {
@@ -366,16 +404,34 @@ async function loadTeams() {
 
 async function loadPlayers() {
   try {
-    const players = await api(`/api/players?championship_id=${getChampionshipId()}`);
-    document.getElementById('playersTable').innerHTML = players.map(p => `
-      <tr>
-        <td><strong>#${p.jersey_number}</strong></td>
-        <td>${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</td>
-        <td>${escapeHtml(p.teams?.name || '-')}</td>
-        <td>${escapeHtml(p.position || '-')}</td>
-      </tr>
-    `).join('') || '<tr><td colspan="4">No hay jugadores registrados.</td></tr>';
+    playersData = await api(`/api/players?championship_id=${getChampionshipId()}`);
+    playersCurrentPage = 1;
+    renderPlayersPage();
   } catch (error) { showError('playersTable', error); }
+}
+
+function renderPlayersPage() {
+  const table = document.getElementById('playersTable');
+  if (!table) return;
+
+  const pages = totalPages(playersData);
+  playersCurrentPage = Math.min(Math.max(1, playersCurrentPage), pages);
+  const rows = pageSlice(playersData, playersCurrentPage).map(p => `
+    <tr>
+      <td><strong>#${p.jersey_number}</strong></td>
+      <td>${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</td>
+      <td>${escapeHtml(p.teams?.name || '-')}</td>
+      <td>${escapeHtml(p.position || '-')}</td>
+    </tr>
+  `).join('');
+
+  table.innerHTML = rows || '<tr><td colspan="4">No hay jugadores registrados.</td></tr>';
+  renderPagination('playersPagination', playersCurrentPage, pages, 'goToPlayersPage', playersData.length);
+}
+
+function goToPlayersPage(page) {
+  playersCurrentPage = Number(page || 1);
+  renderPlayersPage();
 }
 
 function matchTeamRow(team, score, label) {
@@ -438,13 +494,13 @@ async function loadStandings() {
     document.getElementById('standingsTable').innerHTML = standings.map((s, index) => `
       <tr>
         <td><strong>${index + 1}. ${escapeHtml(s.team_name)}</strong></td>
+        <td><strong>${s.championship_points}</strong></td>
         <td>${s.played}</td>
         <td>${s.wins}</td>
         <td>${s.losses}</td>
         <td>${s.points_for}</td>
         <td>${s.points_against}</td>
         <td>${s.point_difference}</td>
-        <td><strong>${s.championship_points}</strong></td>
       </tr>
     `).join('') || '<tr><td colspan="8">No hay tabla disponible.</td></tr>';
   } catch (error) { showError('standingsTable', error); }
@@ -452,21 +508,39 @@ async function loadStandings() {
 
 async function loadStats() {
   try {
-    const stats = await api(`/api/stats/players?championship_id=${getChampionshipId()}`);
-    document.getElementById('statsTable').innerHTML = stats.map(s => `
-      <tr>
-        <td><strong>#${s.jersey_number || '-'} ${escapeHtml(s.player_name)}</strong></td>
-        <td>${escapeHtml(s.team_name || '-')}</td>
-        <td>${s.points}</td>
-        <td>${s.fouls}</td>
-        <td>${s.points_triple ?? 0}</td>
-        <td>${s.rebounds}</td>
-        <td>${s.assists}</td>
-        <td>${s.steals}</td>
-        <td>${s.blocks}</td>
-      </tr>
-    `).join('') || '<tr><td colspan="9">No hay estadísticas registradas.</td></tr>';
+    statsData = await api(`/api/stats/players?championship_id=${getChampionshipId()}`);
+    statsCurrentPage = 1;
+    renderStatsPage();
   } catch (error) { showError('statsTable', error); }
+}
+
+function renderStatsPage() {
+  const table = document.getElementById('statsTable');
+  if (!table) return;
+
+  const pages = totalPages(statsData);
+  statsCurrentPage = Math.min(Math.max(1, statsCurrentPage), pages);
+  const rows = pageSlice(statsData, statsCurrentPage).map(s => `
+    <tr>
+      <td><strong>#${s.jersey_number || '-'} ${escapeHtml(s.player_name)}</strong></td>
+      <td>${escapeHtml(s.team_name || '-')}</td>
+      <td>${s.points}</td>
+      <td>${s.fouls}</td>
+      <td>${s.points_triple ?? 0}</td>
+      <td>${s.rebounds}</td>
+      <td>${s.assists}</td>
+      <td>${s.steals}</td>
+      <td>${s.blocks}</td>
+    </tr>
+  `).join('');
+
+  table.innerHTML = rows || '<tr><td colspan="9">No hay estadísticas registradas.</td></tr>';
+  renderPagination('statsPagination', statsCurrentPage, pages, 'goToStatsPage', statsData.length);
+}
+
+function goToStatsPage(page) {
+  statsCurrentPage = Number(page || 1);
+  renderStatsPage();
 }
 
 async function loadAll() {

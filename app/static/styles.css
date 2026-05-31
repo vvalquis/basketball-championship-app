@@ -1321,3 +1321,70 @@ footer p { color: var(--muted); }
     white-space: normal !important;
   }
 }
+
+/* Paginación para Ranking de jugadores y Jugadores */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding: 10px 0 2px;
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pagination-button,
+.pagination-page {
+  border: 1px solid rgba(255, 184, 77, 0.45);
+  background: rgba(16, 18, 24, 0.92);
+  color: #fff7e8;
+  border-radius: 999px;
+  padding: 8px 12px;
+  min-height: 36px;
+  cursor: pointer;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.pagination-button:hover:not(:disabled),
+.pagination-page:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 184, 77, 0.9);
+  background: rgba(255, 112, 28, 0.18);
+}
+
+.pagination-page.active {
+  background: linear-gradient(135deg, #ff5a1f, #ffd166);
+  color: #15100a;
+  border-color: transparent;
+}
+
+.pagination-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pagination-summary {
+  color: rgba(255, 247, 232, 0.68);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .pagination-controls {
+    justify-content: center;
+  }
+
+  .pagination-summary {
+    width: 100%;
+    text-align: center;
+  }
+}
