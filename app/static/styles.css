@@ -1058,3 +1058,151 @@ footer p { color: var(--muted); }
     font-size: 1rem;
   }
 }
+
+/* =========================================================
+   Calendario y resultados - distribución tipo marcador
+   ========================================================= */
+.match-card-modern {
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px) !important;
+  gap: 1.25rem !important;
+  align-items: stretch !important;
+  padding: 1.05rem !important;
+}
+
+.match-teams-panel {
+  display: grid;
+  gap: .7rem;
+  min-width: 0;
+}
+
+.match-team-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: .7rem .85rem;
+  border-radius: 18px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,176,0,.12);
+}
+
+.match-team-main {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  min-width: 0;
+}
+
+.match-team-logo {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(0,0,0,.28);
+  border: 1px solid rgba(255,176,0,.16);
+  overflow: hidden;
+}
+
+.match-team-logo img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+}
+
+.match-team-logo span { font-size: 1.45rem; }
+
+.match-team-name {
+  color: #fff7ed;
+  font-size: clamp(1rem, 2.4vw, 1.35rem);
+  font-weight: 1000;
+  line-height: 1.1;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.match-team-score {
+  min-width: 58px;
+  text-align: right;
+  font-size: clamp(1.55rem, 3.5vw, 2.35rem);
+  line-height: 1;
+  font-weight: 1000;
+  letter-spacing: -.05em;
+  color: var(--accent-2);
+}
+
+.match-info-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: .65rem;
+  padding-left: 1.1rem;
+  border-left: 1px solid rgba(255,255,255,.16);
+  color: #fff7ed;
+}
+
+.match-status-pill {
+  align-self: flex-start;
+  padding: .42rem .76rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255,122,0,.22), rgba(255,176,0,.18));
+  border: 1px solid rgba(255,176,0,.24);
+  color: var(--accent-2);
+  font-weight: 1000;
+  text-transform: uppercase;
+  font-size: .76rem;
+  letter-spacing: .06em;
+}
+
+.match-date-block {
+  display: grid;
+  gap: .15rem;
+}
+
+.match-date-block strong {
+  font-size: 1.08rem;
+  color: #ffffff;
+}
+
+.match-date-block span,
+.match-venue {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.match-info-panel .detail-link-button {
+  width: fit-content;
+  margin-top: .2rem;
+}
+
+@media (max-width: 760px) {
+  .match-card-modern {
+    grid-template-columns: 1fr !important;
+    text-align: left !important;
+  }
+
+  .match-info-panel {
+    border-left: 0;
+    border-top: 1px solid rgba(255,255,255,.16);
+    padding-left: 0;
+    padding-top: 1rem;
+  }
+
+  .match-team-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: .65rem;
+  }
+
+  .match-team-logo {
+    width: 48px;
+    height: 48px;
+    flex-basis: 48px;
+  }
+
+  .match-team-score {
+    min-width: 46px;
+  }
+}

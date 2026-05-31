@@ -378,24 +378,55 @@ async function loadPlayers() {
   } catch (error) { showError('playersTable', error); }
 }
 
+function matchTeamRow(team, score, label) {
+  const teamName = escapeHtml(team?.name || label || 'Equipo');
+  const logoUrl = team?.logo_url ? escapeHtml(team.logo_url) : '';
+  const displayScore = Number(score || 0) > 0 ? Number(score || 0) : '-';
+
+  return `
+    <div class="match-team-row">
+      <div class="match-team-main">
+        <div class="match-team-logo">
+          ${logoUrl ? `<img src="${logoUrl}" alt="Logo ${teamName}" loading="lazy" />` : '<span>🏀</span>'}
+        </div>
+        <strong class="match-team-name">${teamName}</strong>
+      </div>
+      <div class="match-team-score">${displayScore}</div>
+    </div>
+  `;
+}
+
+function matchStatusLabel(status) {
+  const value = String(status || '').toUpperCase();
+  const labels = {
+    FINISHED: 'Finalizado',
+    SCHEDULED: 'Programado',
+    IN_PROGRESS: 'En juego',
+    CANCELLED: 'Cancelado',
+    SUSPENDED: 'Suspendido'
+  };
+  return labels[value] || status || '-';
+}
+
 async function loadMatches() {
   try {
     const matches = await api(`/api/matches?championship_id=${getChampionshipId()}`);
     matches.sort((a, b) => `${b.match_date || ''} ${b.match_time || ''}`.localeCompare(`${a.match_date || ''} ${a.match_time || ''}`));
     document.getElementById('matchesContainer').innerHTML = matches.map(m => `
-      <article class="match-card">
-        <div>
-          <div class="team">${escapeHtml(m.home_team?.name || 'Local')}</div>
-          <p>${escapeHtml(m.match_date || '')} ${escapeHtml(m.match_time || '')}<br>${escapeHtml(m.venue || '')}</p>
+      <article class="match-card match-card-modern">
+        <div class="match-teams-panel">
+          ${matchTeamRow(m.home_team, m.home_score, 'Local')}
+          ${matchTeamRow(m.away_team, m.away_score, 'Visitante')}
         </div>
-        <div>
-          <div class="score">${m.home_score} - ${m.away_score}</div>
-          <span class="badge">${escapeHtml(m.status)}</span>
-        </div>
-        <div>
-          <div class="team">${escapeHtml(m.away_team?.name || 'Visitante')}</div>
-          <p><button class="detail-link-button" type="button" onclick="openMatchDetail(${m.id})">Ver detalle</button></p>
-        </div>
+        <aside class="match-info-panel">
+          <span class="match-status-pill">${escapeHtml(matchStatusLabel(m.status))}</span>
+          <div class="match-date-block">
+            <strong>${escapeHtml(m.match_date || 'Fecha por definir')}</strong>
+            <span>${escapeHtml(m.match_time || '')}</span>
+          </div>
+          <div class="match-venue">📍 ${escapeHtml(m.venue || 'Ubicación por definir')}</div>
+          <button class="detail-link-button" type="button" onclick="openMatchDetail(${m.id})">Ver detalle</button>
+        </aside>
       </article>
     `).join('') || '<p>No hay partidos registrados.</p>';
   } catch (error) { showError('matchesContainer', error); }
