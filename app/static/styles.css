@@ -1206,3 +1206,118 @@ footer p { color: var(--muted); }
     min-width: 46px;
   }
 }
+
+/* =========================================================
+   Calendario y resultados - 2 programaciones por fila
+   ========================================================= */
+#matchesContainer.match-list,
+.match-list {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 1rem !important;
+  align-items: stretch !important;
+}
+
+.match-card-modern {
+  min-width: 0 !important;
+  grid-template-columns: minmax(0, 1fr) minmax(140px, 170px) !important;
+  gap: .85rem !important;
+  padding: .85rem !important;
+}
+
+.match-teams-panel {
+  gap: .55rem !important;
+  min-width: 0 !important;
+}
+
+.match-team-row {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: .65rem !important;
+  padding: .58rem .65rem !important;
+  border-radius: 16px !important;
+}
+
+.match-team-main {
+  gap: .6rem !important;
+  min-width: 0 !important;
+}
+
+.match-team-logo {
+  width: 42px !important;
+  height: 42px !important;
+  flex: 0 0 42px !important;
+  border-radius: 12px !important;
+}
+
+.match-team-name {
+  font-size: clamp(.88rem, 1.25vw, 1.08rem) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.match-team-score {
+  min-width: 40px !important;
+  font-size: clamp(1.15rem, 1.8vw, 1.55rem) !important;
+}
+
+.match-info-panel {
+  gap: .45rem !important;
+  padding-left: .8rem !important;
+  min-width: 0 !important;
+}
+
+.match-status-pill {
+  padding: .32rem .58rem !important;
+  font-size: .68rem !important;
+}
+
+.match-date-block strong {
+  font-size: .94rem !important;
+}
+
+.match-date-block span,
+.match-venue {
+  font-size: .82rem !important;
+  line-height: 1.25 !important;
+}
+
+.match-info-panel .detail-link-button {
+  padding: .46rem .7rem !important;
+  font-size: .78rem !important;
+}
+
+@media (max-width: 1100px) {
+  .match-card-modern {
+    grid-template-columns: 1fr !important;
+  }
+
+  .match-info-panel {
+    border-left: 0 !important;
+    border-top: 1px solid rgba(255,255,255,.16) !important;
+    padding-left: 0 !important;
+    padding-top: .75rem !important;
+  }
+}
+
+@media (max-width: 820px) {
+  #matchesContainer.match-list,
+  .match-list {
+    grid-template-columns: 1fr !important;
+  }
+
+  .match-card-modern {
+    grid-template-columns: 1fr !important;
+    text-align: left !important;
+  }
+
+  .match-team-logo {
+    width: 48px !important;
+    height: 48px !important;
+    flex-basis: 48px !important;
+  }
+
+  .match-team-name {
+    white-space: normal !important;
+  }
+}
