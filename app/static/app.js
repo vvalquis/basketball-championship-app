@@ -122,23 +122,25 @@ function setupResponsiveMenu() {
   const overlay = document.getElementById('menuOverlay');
   const nav = document.getElementById('mainNav');
 
-  const openMenu = () => {
-    body.classList.add('menu-open');
-    menuButton?.setAttribute('aria-expanded', 'true');
-    overlay?.setAttribute('aria-hidden', 'false');
+  // Evita registrar eventos duplicados si el script se recarga.
+  if (!menuButton || menuButton.dataset.menuReady === 'true') return;
+  menuButton.dataset.menuReady = 'true';
+
+  const setMenuState = (isOpen) => {
+    body.classList.toggle('menu-open', isOpen);
+    body.classList.toggle('side-menu-open', isOpen);
+    menuButton.setAttribute('aria-expanded', String(isOpen));
+    overlay?.setAttribute('aria-hidden', String(!isOpen));
   };
 
-  const closeMenu = () => {
-    body.classList.remove('menu-open');
-    menuButton?.setAttribute('aria-expanded', 'false');
-    overlay?.setAttribute('aria-hidden', 'true');
-  };
+  const openMenu = () => setMenuState(true);
+  const closeMenu = () => setMenuState(false);
+  const toggleMenu = () => setMenuState(!body.classList.contains('menu-open'));
 
-  menuButton?.addEventListener('click', (event) => {
+  menuButton.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (body.classList.contains('menu-open')) closeMenu();
-    else openMenu();
+    toggleMenu();
   });
 
   closeButton?.addEventListener('click', (event) => {
@@ -147,16 +149,23 @@ function setupResponsiveMenu() {
     closeMenu();
   });
 
-  overlay?.addEventListener('click', closeMenu);
+  overlay?.addEventListener('click', (event) => {
+    event.preventDefault();
+    closeMenu();
+  });
 
   nav?.addEventListener('click', (event) => {
     const link = event.target.closest('a[href^="#"]');
     if (!link) return;
+
     event.preventDefault();
     event.stopPropagation();
+
     const targetId = link.getAttribute('href');
     closeMenu();
-    window.setTimeout(() => navigateToSection(targetId), 90);
+
+    // Espera a que el menú libere el scroll y luego navega a la sección.
+    window.setTimeout(() => navigateToSection(targetId), 160);
   });
 
   document.addEventListener('keydown', (event) => {
@@ -165,6 +174,16 @@ function setupResponsiveMenu() {
       closeMatchDetail();
     }
   });
+
+  // Al rotar o cambiar tamaño en celular/tablet, cierra el menú para que no quede parcial.
+  let resizeTimer;
+  const closeAfterLayoutChange = () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(closeMenu, 140);
+  };
+
+  window.addEventListener('orientationchange', closeAfterLayoutChange);
+  window.addEventListener('resize', closeAfterLayoutChange);
 }
 
 function setupSectionToggles() {
@@ -602,95 +621,3 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadChampionships();
   await loadAll();
 });
-
-/* Fix menú lateral al cambiar orientación en celular/tablet.
-   Pegar al final de app/static/app.js o cargar después de app.js. */
-(function () {
-  function closeSideMenu() {
-    const body = document.body;
-    const menuButton = document.getElementById('mobileMenuBtn');
-    const overlay = document.getElementById('menuOverlay');
-    body.classList.remove('menu-open');
-    body.style.overflow = '';
-    menuButton?.setAttribute('aria-expanded', 'false');
-    overlay?.setAttribute('aria-hidden', 'true');
-  }
-
-  function openSideMenu() {
-    const body = document.body;
-    const menuButton = document.getElementById('mobileMenuBtn');
-    const overlay = document.getElementById('menuOverlay');
-    body.classList.add('menu-open');
-    body.style.overflow = 'hidden';
-    menuButton?.setAttribute('aria-expanded', 'true');
-    overlay?.setAttribute('aria-hidden', 'false');
-  }
-
-  function goToSectionFromMenu(href) {
-    const id = String(href || '').replace('#', '');
-    const section = document.getElementById(id);
-    if (!section) return;
-
-    if (section.classList.contains('section-collapsed')) {
-      section.classList.remove('section-collapsed');
-      const button = section.querySelector('.section-toggle');
-      const icon = button?.querySelector('.toggle-icon');
-      button?.setAttribute('aria-expanded', 'true');
-      if (icon) icon.textContent = '⌃';
-    }
-
-    setTimeout(function () {
-      const top = Math.max(0, section.getBoundingClientRect().top + window.scrollY - 82);
-      window.scrollTo({ top: top, behavior: 'smooth' });
-      history.replaceState?.(null, '', '#' + id);
-    }, 120);
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    const menuButton = document.getElementById('mobileMenuBtn');
-    const closeButton = document.getElementById('closeMenuBtn');
-    const overlay = document.getElementById('menuOverlay');
-    const nav = document.getElementById('mainNav');
-
-    menuButton?.addEventListener('click', function (event) {
-      event.preventDefault();
-      event.stopPropagation();
-      document.body.classList.contains('menu-open') ? closeSideMenu() : openSideMenu();
-    });
-
-    closeButton?.addEventListener('click', function (event) {
-      event.preventDefault();
-      closeSideMenu();
-    });
-
-    overlay?.addEventListener('click', closeSideMenu);
-
-    nav?.addEventListener('click', function (event) {
-      const link = event.target.closest('a[href^="#"]');
-      if (!link) return;
-      event.preventDefault();
-      const href = link.getAttribute('href');
-      closeSideMenu();
-      goToSectionFromMenu(href);
-    });
-
-    document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape') closeSideMenu();
-    });
-
-    // Corrección clave: al rotar celular/tablet, se cierra el menú y se recalcula layout.
-    window.addEventListener('orientationchange', function () {
-      closeSideMenu();
-      setTimeout(closeSideMenu, 250);
-    });
-
-    let resizeTimer;
-    window.addEventListener('resize', function () {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(function () {
-        closeSideMenu();
-      }, 180);
-    });
-  });
-})();
-
