@@ -621,3 +621,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadChampionships();
   await loadAll();
 });
+
+/* =========================================================
+   FIX: mantener cabecera fija y calcular altura real del header
+   ========================================================= */
+(function setupFixedHeaderOffset() {
+  function applyHeaderOffset() {
+    const header = document.querySelector('.topbar');
+    if (!header) return;
+    const height = Math.ceil(header.getBoundingClientRect().height);
+    document.documentElement.style.setProperty('--fixed-header-height', `${height}px`);
+  }
+
+  window.addEventListener('load', applyHeaderOffset);
+  window.addEventListener('resize', applyHeaderOffset);
+  window.addEventListener('orientationchange', () => setTimeout(applyHeaderOffset, 250));
+  document.addEventListener('DOMContentLoaded', () => setTimeout(applyHeaderOffset, 50));
+})();
