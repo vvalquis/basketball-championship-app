@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 import json
 import os
 import re
@@ -29,6 +31,22 @@ def json_default(value: Any) -> str:
     if isinstance(value, (datetime, date)):
         return value.isoformat()
     return str(value)
+
+
+def verify_password(password: str, stored_value: str) -> bool:
+    """Verificación simple sin dependencias externas.
+
+    Para esta versión se soporta:
+    - contraseña guardada tal cual en users.password_hash
+    - SHA256 hexadecimal de la contraseña
+
+    Para producción se recomienda migrar a bcrypt/argon2.
+    """
+    password = password or ""
+    stored_value = stored_value or ""
+    plain_ok = hmac.compare_digest(password, stored_value)
+    sha256_ok = hmac.compare_digest(hashlib.sha256(password.encode("utf-8")).hexdigest(), stored_value)
+    return plain_ok or sha256_ok
 
 
 class BasketballHandler(BaseHTTPRequestHandler):
@@ -147,7 +165,9 @@ class BasketballHandler(BaseHTTPRequestHandler):
                     "GET /api/matches/{id}",
                     "PUT /api/matches/{id}/result",
                     "GET /api/standings?championship_id=1",
-                    "GET /api/stats/players"
+                    "GET /api/stats/players",
+                    "POST /api/auth/login",
+                    "GET /api/maintenance/{table}"
                 ]
             })
 
@@ -280,10 +300,84 @@ class BasketballHandler(BaseHTTPRequestHandler):
             ranking = sorted(aggregated.values(), key=lambda item: item["points"], reverse=True)
             return self._send_json(ranking)
 
+        maintenance_match = re.match(r"^/api/maintenance/(teams|players|matches|match_periods|player_match_stats)$", path)
+        if maintenance_match:
+            table = maintenance_match.group(1)
+            championship_id = params.get("championship_id", ["1"])[0]
+
+            if table == "teams":
+                data = db.select("teams", {"select": "*", "championship_id": f"eq.{championship_id}", "order": "name.asc"})
+                return self._send_json(data)
+
+            if table == "players":
+                data = db.select("players", {"select": "*,teams(name,championship_id)", "order": "last_name.asc,first_name.asc"})
+                data = [p for p in data if str((p.get("teams") or {}).get("championship_id")) == str(championship_id)]
+                return self._send_json(data)
+
+            if table == "matches":
+                data = db.select("matches", {"select": "*", "championship_id": f"eq.{championship_id}", "order": "match_date.desc,match_time.asc"})
+                data = sorted(data, key=lambda m: (m.get("match_date") or "1900-01-01", m.get("match_time") or "00:00:00"))
+                data = sorted(data, key=lambda m: m.get("match_date") or "1900-01-01", reverse=True)
+                team_ids = sorted({str(m.get("home_team_id")) for m in data if m.get("home_team_id")} | {str(m.get("away_team_id")) for m in data if m.get("away_team_id")})
+                teams_by_id = {}
+                if team_ids:
+                    teams = db.select("teams", {"select": "id,name,logo_url", "id": f"in.({','.join(team_ids)})"})
+                    teams_by_id = {str(team.get("id")): team for team in teams}
+                for match in data:
+                    match["home_team"] = teams_by_id.get(str(match.get("home_team_id")), {"name": "Local"})
+                    match["away_team"] = teams_by_id.get(str(match.get("away_team_id")), {"name": "Visitante"})
+                return self._send_json(data)
+
+            if table == "match_periods":
+                matches = db.select("matches", {"select": "id", "championship_id": f"eq.{championship_id}"})
+                match_ids = [str(m.get("id")) for m in matches if m.get("id")]
+                if not match_ids:
+                    return self._send_json([])
+                data = db.select("match_periods", {"select": "*", "match_id": f"in.({','.join(match_ids)})", "order": "match_id.desc,period_number.asc"})
+                return self._send_json(data)
+
+            if table == "player_match_stats":
+                championship_teams = db.select("teams", {"select": "id", "championship_id": f"eq.{championship_id}"})
+                allowed_team_ids = [str(team.get("id")) for team in championship_teams if team.get("id")]
+                if not allowed_team_ids:
+                    return self._send_json([])
+                data = db.select("player_match_stats", {
+                    "select": "*,players(first_name,last_name,jersey_number),teams(name)",
+                    "team_id": f"in.({','.join(allowed_team_ids)})",
+                    "order": "match_id.desc,points.desc"
+                })
+                return self._send_json(data)
+
         return self._send_error("Endpoint no encontrado", 404)
 
     def _handle_post_api(self, path: str, body: Dict[str, Any]) -> None:
         db = self._client()
+
+        if path == "/api/auth/login":
+            name = str(body.get("name", "")).strip()
+            password = str(body.get("password", ""))
+            if not name or not password:
+                return self._send_error("Nombre y contraseña son obligatorios", 400)
+
+            users = db.select("users", {"select": "id,name,email,role,status,password_hash", "name": f"eq.{name}"})
+            if not users:
+                return self._send_error("Usuario o contraseña incorrectos", 401)
+
+            user = users[0]
+            if str(user.get("status", "ACTIVE")).upper() != "ACTIVE":
+                return self._send_error("Usuario inactivo", 403)
+
+            if not verify_password(password, str(user.get("password_hash", ""))):
+                return self._send_error("Usuario o contraseña incorrectos", 401)
+
+            return self._send_json({
+                "user": {
+                    "id": user.get("id"),
+                    "name": user.get("name"),
+                    "email": user.get("email"),
+                    "role": user.get("role"),
+                }
+            })
 
         if path == "/api/teams":
             payload = {

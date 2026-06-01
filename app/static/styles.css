@@ -1716,3 +1716,150 @@ body.modal-is-open .topbar {
     max-height: calc(100dvh - var(--fixed-header-height) - 1.1rem) !important;
   }
 }
+
+/* =========================================================
+   Login administrativo y menú de mantenimientos
+   ========================================================= */
+.hidden {
+  display: none !important;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .75rem;
+  flex-wrap: nowrap;
+}
+
+.auth-control {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+}
+
+.login-button,
+.logout-button,
+.primary-button {
+  border: 1px solid rgba(255,176,0,.45);
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  color: #160707;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: .62rem .9rem;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(255,122,0,.18);
+}
+
+.logout-button {
+  padding: .45rem .75rem;
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+}
+
+.logged-user-box {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .35rem .45rem .35rem .75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,176,0,.26);
+  background: rgba(0,0,0,.35);
+  color: #fff;
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+.login-panel {
+  width: min(480px, calc(100vw - 1.5rem));
+}
+
+.login-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.login-form label {
+  display: grid;
+  gap: .4rem;
+  color: var(--muted);
+  font-size: .85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.login-form input {
+  width: 100%;
+  border: 1px solid rgba(255,176,0,.28);
+  border-radius: 14px;
+  background: rgba(0,0,0,.35);
+  color: var(--text);
+  padding: .85rem .9rem;
+  outline: none;
+}
+
+.login-form input:focus {
+  border-color: rgba(255,176,0,.72);
+  box-shadow: 0 0 0 3px rgba(255,122,0,.18);
+}
+
+.login-error {
+  min-height: 1.2rem;
+  color: #ffb4a0;
+  font-weight: 800;
+}
+
+.maintenance-section {
+  border: 1px solid rgba(255,176,0,.18);
+  border-radius: 24px;
+  padding: 1.25rem;
+  margin: 1rem 0;
+  background: rgba(255,255,255,.035);
+}
+
+.maintenance-note {
+  margin-bottom: .85rem;
+  color: var(--muted);
+  font-size: .92rem;
+}
+
+.status-ok {
+  display: inline-flex;
+  padding: .28rem .55rem;
+  border-radius: 999px;
+  color: #12210a;
+  background: linear-gradient(135deg, #ffcf5a, #ff7a00);
+  font-weight: 900;
+}
+
+.main-nav a.auth-only {
+  border-color: rgba(255,176,0,.34) !important;
+  background: rgba(255,122,0,.12) !important;
+}
+
+@media (max-width: 940px) {
+  .desktop-auth-only {
+    display: none !important;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar-actions {
+    gap: .45rem;
+  }
+}
+
+@media (max-width: 940px) {
+  .main-nav a.auth-only,
+  .maintenance-section.auth-only {
+    display: none !important;
+  }
+}

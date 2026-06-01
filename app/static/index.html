@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fénix Rímac Basketball League</title>
-  <link rel="stylesheet" href="/styles.css?v=20260601-modal-under-header" />
+  <link rel="stylesheet" href="/styles.css?v=20260601-login-maintenance" />
 </head>
 <body>
   <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
@@ -19,11 +19,20 @@
         <p>Resultados, posiciones y estadísticas con estética profesional</p>
       </div>
     </div>
-    <div class="championship-control" aria-label="Selector de campeonato">
-      <label for="championshipSelect" class="sr-only">Seleccionar torneo</label>
-      <select id="championshipSelect" aria-label="Seleccionar torneo">
-        <option value="">Cargando...</option>
-      </select>
+    <div class="topbar-actions">
+      <div class="championship-control" aria-label="Selector de campeonato">
+        <label for="championshipSelect" class="sr-only">Seleccionar torneo</label>
+        <select id="championshipSelect" aria-label="Seleccionar torneo">
+          <option value="">Cargando...</option>
+        </select>
+      </div>
+      <div class="auth-control desktop-auth-only" id="authControl">
+        <button id="loginBtn" class="login-button" type="button">Ingresar</button>
+        <div id="loggedUserBox" class="logged-user-box hidden">
+          <span id="loggedUserName"></span>
+          <button id="logoutBtn" class="logout-button" type="button">Salir</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -38,6 +47,11 @@
     <a href="#posiciones" data-section-link="posiciones">Posiciones</a>
     <a href="#stats" data-section-link="stats">Estadísticas</a>
     <a href="#jugadores" data-section-link="jugadores">Jugadores</a>
+    <a href="#mant-teams" class="auth-only hidden" data-section-link="mant-teams">Mant. Equipos</a>
+    <a href="#mant-players" class="auth-only hidden" data-section-link="mant-players">Mant. Jugadores</a>
+    <a href="#mant-matches" class="auth-only hidden" data-section-link="mant-matches">Mant. Partidos</a>
+    <a href="#mant-periods" class="auth-only hidden" data-section-link="mant-periods">Mant. Tiempos</a>
+    <a href="#mant-stats" class="auth-only hidden" data-section-link="mant-stats">Mant. Estadísticas</a>
   </nav>
 
   <main>
@@ -130,6 +144,62 @@
     </section>
 
 
+    <section id="mant-teams" class="section section-collapsible maintenance-section auth-only hidden">
+      <div class="section-title-row">
+        <h2>Mantenimiento de equipos</h2>
+        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+      </div>
+      <div class="section-content">
+        <div class="maintenance-note">Consulta administrativa de la tabla <strong>teams</strong>.</div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Equipo</th><th>Delegado</th><th>Logo</th></tr></thead><tbody id="maintenanceTeamsTable"></tbody></table></div>
+      </div>
+    </section>
+
+    <section id="mant-players" class="section section-collapsible maintenance-section auth-only hidden">
+      <div class="section-title-row">
+        <h2>Mantenimiento de jugadores</h2>
+        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+      </div>
+      <div class="section-content">
+        <div class="maintenance-note">Consulta administrativa de la tabla <strong>players</strong>.</div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>#</th><th>Jugador</th><th>Equipo</th><th>Posición</th></tr></thead><tbody id="maintenancePlayersTable"></tbody></table></div>
+      </div>
+    </section>
+
+    <section id="mant-matches" class="section section-collapsible maintenance-section auth-only hidden">
+      <div class="section-title-row">
+        <h2>Mantenimiento de partidos</h2>
+        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+      </div>
+      <div class="section-content">
+        <div class="maintenance-note">Consulta administrativa de la tabla <strong>matches</strong>.</div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Local</th><th>Visitante</th><th>Fecha</th><th>Hora</th><th>Estado</th><th>Marcador</th></tr></thead><tbody id="maintenanceMatchesTable"></tbody></table></div>
+      </div>
+    </section>
+
+    <section id="mant-periods" class="section section-collapsible maintenance-section auth-only hidden">
+      <div class="section-title-row">
+        <h2>Mantenimiento de tiempos</h2>
+        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+      </div>
+      <div class="section-content">
+        <div class="maintenance-note">Consulta administrativa de la tabla <strong>match_periods</strong>.</div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Partido</th><th>Tiempo</th><th>Local</th><th>Visitante</th></tr></thead><tbody id="maintenancePeriodsTable"></tbody></table></div>
+      </div>
+    </section>
+
+    <section id="mant-stats" class="section section-collapsible maintenance-section auth-only hidden">
+      <div class="section-title-row">
+        <h2>Mantenimiento de estadísticas</h2>
+        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+      </div>
+      <div class="section-content">
+        <div class="maintenance-note">Consulta administrativa de la tabla <strong>player_match_stats</strong>.</div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Partido</th><th>Jugador</th><th>Equipo</th><th>PTS</th><th>FALTAS</th><th>PTS (3)</th><th>REB</th><th>AST</th></tr></thead><tbody id="maintenanceStatsTable"></tbody></table></div>
+      </div>
+    </section>
+
+
   </main>
 
   <div id="matchDetailModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="matchDetailTitle">
@@ -140,10 +210,35 @@
     </div>
   </div>
 
+  <div id="loginModal" class="modal login-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="modal-backdrop" data-close-login></div>
+    <div class="modal-panel login-panel">
+      <button class="modal-close" type="button" aria-label="Cerrar login" data-close-login>×</button>
+      <div class="modal-header-block">
+        <span class="badge">Acceso administrativo</span>
+        <h2 id="loginTitle">Iniciar sesión</h2>
+        <p>Ingresa con el usuario registrado en la tabla users.</p>
+      </div>
+      <form id="loginForm" class="login-form">
+        <label>
+          Nombre
+          <input id="loginName" name="name" type="text" autocomplete="username" required placeholder="Nombre de usuario" />
+        </label>
+        <label>
+          Contraseña
+          <input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Contraseña" />
+        </label>
+        <button class="primary-button" type="submit">Ingresar</button>
+        <div id="loginError" class="login-error" role="alert"></div>
+      </form>
+    </div>
+  </div>
+
+
   <footer>
     <p>Fénix Rímac Basketball League</p>
   </footer>
 
-  <script src="/app.js?v=20260601-modal-under-header"></script>
+  <script src="/app.js?v=20260601-login-maintenance"></script>
 </body>
 </html>

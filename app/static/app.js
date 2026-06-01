@@ -623,8 +623,200 @@ function goToStatsPage(page) {
   renderStatsPage();
 }
 
+
+/* =========================================================
+   Autenticación simple contra tabla users
+   ========================================================= */
+let currentUser = null;
+const AUTH_STORAGE_KEY = 'fenix_admin_user';
+
+function saveSession(user) {
+  currentUser = user || null;
+  if (currentUser) localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(currentUser));
+  else localStorage.removeItem(AUTH_STORAGE_KEY);
+  renderAuthState();
+}
+
+function restoreSession() {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    currentUser = raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    currentUser = null;
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+  }
+  renderAuthState();
+}
+
+function isLoggedIn() {
+  return Boolean(currentUser && currentUser.name);
+}
+
+function renderAuthState() {
+  const loggedIn = isLoggedIn();
+  document.querySelectorAll('.auth-only').forEach((el) => el.classList.toggle('hidden', !loggedIn));
+
+  const loginBtn = document.getElementById('loginBtn');
+  const userBox = document.getElementById('loggedUserBox');
+  const userName = document.getElementById('loggedUserName');
+
+  if (loginBtn) loginBtn.classList.toggle('hidden', loggedIn);
+  if (userBox) userBox.classList.toggle('hidden', !loggedIn);
+  if (userName) userName.textContent = loggedIn ? `👤 ${currentUser.name}` : '';
+
+  if (loggedIn) {
+    loadMaintenanceData().catch((error) => console.error('No se pudo cargar mantenimiento:', error));
+  }
+}
+
+function openLoginModal() {
+  const modal = document.getElementById('loginModal');
+  const error = document.getElementById('loginError');
+  if (!modal) return;
+  if (error) error.textContent = '';
+  modal.classList.add('modal-open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-is-open');
+  setTimeout(() => document.getElementById('loginName')?.focus(), 80);
+}
+
+function closeLoginModal() {
+  const modal = document.getElementById('loginModal');
+  if (!modal) return;
+  modal.classList.remove('modal-open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-is-open');
+}
+
+function setupLogin() {
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const form = document.getElementById('loginForm');
+
+  loginBtn?.addEventListener('click', openLoginModal);
+  logoutBtn?.addEventListener('click', () => {
+    saveSession(null);
+    document.querySelectorAll('.maintenance-section').forEach((section) => section.classList.add('hidden'));
+  });
+
+  document.querySelectorAll('[data-close-login]').forEach((el) => el.addEventListener('click', closeLoginModal));
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const error = document.getElementById('loginError');
+    if (error) error.textContent = '';
+
+    const name = document.getElementById('loginName')?.value?.trim();
+    const password = document.getElementById('loginPassword')?.value || '';
+
+    if (!name || !password) {
+      if (error) error.textContent = 'Ingresa nombre y contraseña.';
+      return;
+    }
+
+    try {
+      const result = await api('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ name, password }),
+      });
+      saveSession(result.user);
+      closeLoginModal();
+      form.reset();
+    } catch (err) {
+      if (error) error.textContent = err.message || 'No se pudo iniciar sesión.';
+    }
+  });
+}
+
+function setupAuthEscapeHandler() {
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeLoginModal();
+  });
+}
+
+function emptyRow(colspan, text) {
+  return `<tr><td colspan="${colspan}">${escapeHtml(text)}</td></tr>`;
+}
+
+async function loadMaintenanceData() {
+  if (!isLoggedIn()) return;
+  const championshipId = getChampionshipId();
+  const [teams, players, matches, periods, stats] = await Promise.all([
+    api(`/api/maintenance/teams?championship_id=${championshipId}`),
+    api(`/api/maintenance/players?championship_id=${championshipId}`),
+    api(`/api/maintenance/matches?championship_id=${championshipId}`),
+    api(`/api/maintenance/match_periods?championship_id=${championshipId}`),
+    api(`/api/maintenance/player_match_stats?championship_id=${championshipId}`),
+  ]);
+
+  const mt = document.getElementById('maintenanceTeamsTable');
+  if (mt) mt.innerHTML = teams.map(t => `
+    <tr>
+      <td>${t.id}</td>
+      <td><strong>${escapeHtml(t.name || '-')}</strong></td>
+      <td>${escapeHtml(t.coach_name || '-')}</td>
+      <td>${t.logo_url ? '<span class="status-ok">Sí</span>' : '-'}</td>
+    </tr>
+  `).join('') || emptyRow(4, 'No hay equipos registrados.');
+
+  const mp = document.getElementById('maintenancePlayersTable');
+  if (mp) mp.innerHTML = players.map(p => `
+    <tr>
+      <td>${p.id}</td>
+      <td>${p.jersey_number ?? '-'}</td>
+      <td><strong>${escapeHtml((p.first_name || '') + ' ' + (p.last_name || ''))}</strong></td>
+      <td>${escapeHtml(p.teams?.name || '-')}</td>
+      <td>${escapeHtml(p.position || '-')}</td>
+    </tr>
+  `).join('') || emptyRow(5, 'No hay jugadores registrados.');
+
+  const mm = document.getElementById('maintenanceMatchesTable');
+  if (mm) mm.innerHTML = matches.map(m => `
+    <tr>
+      <td>${m.id}</td>
+      <td>${escapeHtml(m.home_team?.name || '-')}</td>
+      <td>${escapeHtml(m.away_team?.name || '-')}</td>
+      <td>${escapeHtml(m.match_date || '-')}</td>
+      <td>${escapeHtml(m.match_time || '-')}</td>
+      <td>${escapeHtml(matchStatusLabel(m.status))}</td>
+      <td>${m.home_score ?? 0} - ${m.away_score ?? 0}</td>
+    </tr>
+  `).join('') || emptyRow(7, 'No hay partidos registrados.');
+
+  const mper = document.getElementById('maintenancePeriodsTable');
+  if (mper) mper.innerHTML = periods.map(p => `
+    <tr>
+      <td>${p.id}</td>
+      <td>${p.match_id}</td>
+      <td>${p.period_number}</td>
+      <td>${p.home_score ?? 0}</td>
+      <td>${p.away_score ?? 0}</td>
+    </tr>
+  `).join('') || emptyRow(5, 'No hay tiempos registrados.');
+
+  const ms = document.getElementById('maintenanceStatsTable');
+  if (ms) ms.innerHTML = stats.map(s => {
+    const player = s.players || {};
+    const name = `${player.first_name || ''} ${player.last_name || ''}`.trim() || '-';
+    return `
+      <tr>
+        <td>${s.id}</td>
+        <td>${s.match_id}</td>
+        <td>${escapeHtml(name)}</td>
+        <td>${escapeHtml(s.teams?.name || '-')}</td>
+        <td>${s.points ?? 0}</td>
+        <td>${s.fouls ?? 0}</td>
+        <td>${s.points_triple ?? 0}</td>
+        <td>${s.rebounds ?? 0}</td>
+        <td>${s.assists ?? 0}</td>
+      </tr>
+    `;
+  }).join('') || emptyRow(9, 'No hay estadísticas registradas.');
+}
+
 async function loadAll() {
   await Promise.all([loadSummary(), loadTeams(), loadPlayers(), loadMatches(), loadStandings(), loadStats()]);
+  if (isLoggedIn()) await loadMaintenanceData();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -632,6 +824,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupSectionToggles();
   setupMatchDetailModal();
   setupMatchTabs();
+  setupLogin();
+  setupAuthEscapeHandler();
+  restoreSession();
   await loadChampionships();
   await loadAll();
 });
