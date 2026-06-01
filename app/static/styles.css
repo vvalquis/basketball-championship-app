@@ -2255,3 +2255,72 @@ body.is-authenticated #maintenanceMenuGroup {
   flex: 0 0 100% !important;
   grid-column: 1 / -1 !important;
 }
+
+/* =========================================================
+   FIX FINAL: bloque mantenimiento visible y vertical
+   ========================================================= */
+#mainNav,
+.main-nav {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  max-height: calc(100vh - var(--fixed-header-height, 96px) - 40px) !important;
+  padding-bottom: 48px !important;
+}
+
+#maintenanceMenuGroup.force-maintenance-menu,
+#maintenanceMenuGroup.maintenance-menu-group {
+  width: 100% !important;
+  min-width: 0 !important;
+  margin-top: 14px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid rgba(90, 34, 20, 0.22) !important;
+  flex: 0 0 auto !important;
+}
+
+#maintenanceMenuGroup.hidden {
+  display: none !important;
+}
+
+#maintenanceMenuGroup.is-visible,
+#maintenanceMenuGroup:not(.hidden) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+#maintenanceMenuGroup .maintenance-menu-title {
+  display: block !important;
+  margin: 4px 0 10px !important;
+  padding: 0 16px !important;
+  color: #5a2214 !important;
+  font-size: 0.82rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+}
+
+#maintenanceMenuGroup .maintenance-menu-link {
+  display: block !important;
+  width: 100% !important;
+  margin: 8px 0 !important;
+  padding: 15px 18px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(90, 34, 20, 0.16) !important;
+  background: rgba(255, 248, 236, 0.92) !important;
+  color: #2c130d !important;
+  font-weight: 900 !important;
+  text-align: left !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  cursor: pointer !important;
+  box-shadow: 0 8px 18px rgba(42, 15, 8, 0.06) !important;
+}
+
+#maintenanceMenuGroup .maintenance-menu-link:hover {
+  transform: translateX(3px) !important;
+  background: #fff4dd !important;
+  border-color: rgba(255, 145, 0, 0.5) !important;
+}

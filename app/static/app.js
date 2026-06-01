@@ -1396,3 +1396,140 @@ function setupMaintenanceMenu() {
   window.addEventListener('resize', refreshMaintenanceVisibility);
   window.ensureMaintenanceMenuPosition = ensureMaintenanceMenuPosition;
 })();
+
+
+/* =========================================================
+   FIX FINAL: Mantenimiento visible debajo de Jugadores
+   - No depende de la estructura previa del HTML.
+   - Revisa la sesión guardada en localStorage.
+   - Inserta el bloque debajo de Jugadores.
+   - Lo muestra al loguearse y lo oculta al salir.
+   ========================================================= */
+(function () {
+  const AUTH_STORAGE_KEY = 'fenix_admin_user';
+
+  function isLoggedInForce() {
+    try {
+      const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+      const user = raw ? JSON.parse(raw) : null;
+      return Boolean(user && user.name);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function findJugadoresLink(nav) {
+    return Array.from(nav.querySelectorAll('a, button')).find((el) => {
+      const text = (el.textContent || '').trim().toUpperCase();
+      const href = el.getAttribute('href') || '';
+      const dataLink = el.getAttribute('data-section-link') || '';
+      return text === 'JUGADORES' || href === '#jugadores' || dataLink === 'jugadores';
+    });
+  }
+
+  function removeLegacyMaintenance(nav) {
+    Array.from(nav.querySelectorAll('a, button, div')).forEach((el) => {
+      if (el.id === 'maintenanceMenuGroup') return;
+      if (el.closest('#maintenanceMenuGroup')) return;
+      const text = (el.textContent || '').trim().toUpperCase();
+      if (text.startsWith('MANT.') || text === 'MANTENIMIENTO') {
+        el.remove();
+      }
+    });
+  }
+
+  function createMaintenanceGroup() {
+    const group = document.createElement('div');
+    group.id = 'maintenanceMenuGroup';
+    group.className = 'maintenance-menu-group force-maintenance-menu hidden';
+    group.innerHTML = `
+      <div class="maintenance-menu-title">Mantenimiento</div>
+      <button type="button" class="maintenance-menu-link" data-maintenance-table="championships">Mant. Torneo</button>
+      <button type="button" class="maintenance-menu-link" data-maintenance-table="teams">Mant. Equipos</button>
+      <button type="button" class="maintenance-menu-link" data-maintenance-table="players">Mant. Jugadores</button>
+      <button type="button" class="maintenance-menu-link" data-maintenance-table="matches">Mant. Partidos</button>
+      <button type="button" class="maintenance-menu-link" data-maintenance-table="match_periods">Mant. Tiempos</button>
+      <button type="button" class="maintenance-menu-link" data-maintenance-table="player_match_stats">Mant. Estadísticas</button>
+    `;
+    return group;
+  }
+
+  function ensureMaintenanceBelowJugadores() {
+    const nav = document.getElementById('mainNav') || document.querySelector('.main-nav');
+    if (!nav) return;
+
+    removeLegacyMaintenance(nav);
+
+    let group = document.getElementById('maintenanceMenuGroup');
+    if (!group) group = createMaintenanceGroup();
+
+    const jugadoresLink = findJugadoresLink(nav);
+    if (jugadoresLink) {
+      jugadoresLink.insertAdjacentElement('afterend', group);
+    } else if (group.parentElement !== nav) {
+      nav.appendChild(group);
+    }
+
+    const logged = isLoggedInForce();
+    group.classList.toggle('hidden', !logged);
+    group.classList.toggle('is-visible', logged);
+    group.style.display = logged ? 'block' : 'none';
+    group.setAttribute('aria-hidden', logged ? 'false' : 'true');
+  }
+
+  function hookAuthButtons() {
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm && !loginForm.dataset.maintenanceHooked) {
+      loginForm.dataset.maintenanceHooked = 'true';
+      loginForm.addEventListener('submit', () => {
+        setTimeout(ensureMaintenanceBelowJugadores, 600);
+        setTimeout(ensureMaintenanceBelowJugadores, 1200);
+      });
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn && !logoutBtn.dataset.maintenanceHooked) {
+      logoutBtn.dataset.maintenanceHooked = 'true';
+      logoutBtn.addEventListener('click', () => setTimeout(ensureMaintenanceBelowJugadores, 100));
+    }
+  }
+
+  function hookMaintenanceClicks() {
+    document.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-maintenance-table]');
+      if (!button) return;
+      event.preventDefault();
+      const table = button.getAttribute('data-maintenance-table');
+
+      if (typeof openMaintenanceModal === 'function') {
+        openMaintenanceModal(table);
+      } else if (typeof openMaintenance === 'function') {
+        openMaintenance(table);
+      } else if (typeof showMaintenance === 'function') {
+        showMaintenance(table);
+      } else if (typeof setupMaintenanceTable === 'function') {
+        setupMaintenanceTable(table);
+      } else {
+        alert('La ventana de mantenimiento aún no está disponible para: ' + table);
+      }
+
+      document.body.classList.remove('menu-open', 'side-menu-open');
+    });
+  }
+
+  function boot() {
+    ensureMaintenanceBelowJugadores();
+    hookAuthButtons();
+    hookMaintenanceClicks();
+
+    // Reintentos: útiles cuando renderAuthState o restoreSession corren después.
+    setTimeout(ensureMaintenanceBelowJugadores, 300);
+    setTimeout(ensureMaintenanceBelowJugadores, 1000);
+    setTimeout(ensureMaintenanceBelowJugadores, 2000);
+  }
+
+  document.addEventListener('DOMContentLoaded', boot);
+  window.addEventListener('load', boot);
+  window.addEventListener('storage', ensureMaintenanceBelowJugadores);
+  window.forceShowMaintenanceMenu = ensureMaintenanceBelowJugadores;
+})();
