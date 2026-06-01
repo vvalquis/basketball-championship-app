@@ -670,17 +670,26 @@ function ensureMaintenanceMenuGroup() {
     group.id = 'maintenanceMenuGroup';
     group.className = 'maintenance-menu-group auth-only hidden';
     group.setAttribute('aria-label', 'Opciones de mantenimiento');
-    group.innerHTML = `
-      <div class="maintenance-menu-title">Mantenimiento</div>
-      <button type="button" class="maintenance-menu-link" data-maint-table="championships">Mant. Torneo</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="teams">Mant. Equipos</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="players">Mant. Jugadores</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="matches">Mant. Partidos</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="match_periods">Mant. Tiempos</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="player_match_stats">Mant. Estadísticas</button>
-    `;
+  }
+
+  group.innerHTML = `
+    <div class="maintenance-menu-title">Mantenimiento</div>
+    <button type="button" class="maintenance-menu-link" data-maint-table="championships">Mant. Torneo</button>
+    <button type="button" class="maintenance-menu-link" data-maint-table="teams">Mant. Equipos</button>
+    <button type="button" class="maintenance-menu-link" data-maint-table="players">Mant. Jugadores</button>
+    <button type="button" class="maintenance-menu-link" data-maint-table="matches">Mant. Partidos</button>
+    <button type="button" class="maintenance-menu-link" data-maint-table="match_periods">Mant. Tiempos</button>
+    <button type="button" class="maintenance-menu-link" data-maint-table="player_match_stats">Mant. Estadísticas</button>
+  `;
+
+  // Ubica siempre el bloque Mantenimiento debajo de la opción Jugadores.
+  const jugadoresLink = nav.querySelector('[data-section-link="jugadores"]');
+  if (jugadoresLink && jugadoresLink.nextSibling !== group) {
+    jugadoresLink.insertAdjacentElement('afterend', group);
+  } else if (!jugadoresLink && group.parentElement !== nav) {
     nav.appendChild(group);
   }
+
   return group;
 }
 

@@ -2053,3 +2053,10 @@ body.modal-is-open .topbar {
 .maintenance-menu-group .maintenance-menu-link {
   display: flex !important;
 }
+
+/* Ubicación visual del bloque de mantenimiento debajo de Jugadores */
+.maintenance-menu-group {
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 190, 80, 0.28);
+  padding-top: 10px;
+}
