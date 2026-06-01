@@ -415,7 +415,6 @@ async function loadSummary() {
         <h3>Líder</h3>
         <div class="leader-team-block">
           ${summary.leader ? teamLogo({ name: summary.leader.team_name, logo_url: summary.leader.logo_url }) : '<div class="team-logo">🏀</div>'}
-          <div class="leader-score">${summary.leader?.championship_points || 0} pts</div>
           <p class="leader-team-name">${escapeHtml(summary.leader?.team_name || 'Sin líder')}</p>
         </div>
       </div>

@@ -1644,12 +1644,13 @@ main {
 .leader-team-block {
   width: 100%;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr;
   grid-template-areas:
-    "logo score"
-    "name name";
+    "logo"
+    "name";
+  justify-items: start;
   align-items: center;
-  gap: 8px 12px;
+  gap: 10px;
 }
 
 .leader-team-block .team-logo {
@@ -1665,15 +1666,6 @@ main {
   object-fit: contain !important;
 }
 
-.leader-score {
-  grid-area: score;
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1;
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  color: var(--gold, #f6c453);
-  text-shadow: 0 0 18px rgba(255, 122, 24, 0.35);
-}
 
 .leader-team-name {
   grid-area: name;
