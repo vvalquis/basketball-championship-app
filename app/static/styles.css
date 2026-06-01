@@ -2060,3 +2060,117 @@ body.modal-is-open .topbar {
   border-top: 1px solid rgba(255, 190, 80, 0.28);
   padding-top: 10px;
 }
+
+/* =========================================================
+   FIX: Menú lateral con scroll vertical y Mantenimiento debajo
+   ========================================================= */
+.main-nav.side-menu,
+.main-nav {
+  width: min(86vw, 360px) !important;
+  max-width: min(86vw, 360px) !important;
+  min-width: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px)) !important;
+  scrollbar-width: thin !important;
+}
+
+.main-nav.side-menu *,
+.main-nav * {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.main-nav a,
+.maintenance-menu-link {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+}
+
+.maintenance-menu-group {
+  display: none !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: .7rem 0 1.5rem !important;
+  padding: .75rem .55rem .85rem !important;
+  border: 1px solid rgba(120, 40, 0, .18) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, .42) !important;
+}
+
+.maintenance-menu-group.is-visible,
+body.is-authenticated .maintenance-menu-group,
+body.logged-in .maintenance-menu-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: .45rem !important;
+}
+
+.maintenance-menu-group.hidden:not(.is-visible) {
+  display: none !important;
+}
+
+.maintenance-menu-title {
+  color: #3a0f02 !important;
+  padding: .45rem .55rem !important;
+  margin: 0 0 .3rem !important;
+  font-weight: 1000 !important;
+  letter-spacing: .08em !important;
+}
+
+.maintenance-menu-link {
+  min-height: 42px !important;
+  padding: .78rem .9rem !important;
+  color: #2a0d03 !important;
+  background: rgba(255,255,255,.70) !important;
+  border: 1px solid rgba(120, 40, 0, .16) !important;
+  border-radius: 14px !important;
+  font-weight: 950 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .02em !important;
+}
+
+.maintenance-menu-link::before {
+  color: #ff7a00 !important;
+}
+
+.maintenance-menu-link:hover,
+.maintenance-menu-link.active {
+  background: linear-gradient(135deg, #2a0d03, #7f1d1d) !important;
+  color: #fff7ed !important;
+  border-color: rgba(255,176,0,.55) !important;
+  transform: none !important;
+}
+
+body.menu-open,
+body.side-menu-open {
+  overflow: hidden !important;
+  touch-action: none !important;
+}
+
+body.menu-open .main-nav,
+body.side-menu-open .main-nav {
+  touch-action: pan-y !important;
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .main-nav.side-menu,
+  .main-nav {
+    height: calc(100dvh - var(--fixed-header-height, 76px)) !important;
+    min-height: 0 !important;
+    padding-bottom: 1.5rem !important;
+  }
+
+  .mobile-nav-header {
+    flex: 0 0 auto !important;
+  }
+
+  .maintenance-menu-group {
+    margin-bottom: 1rem !important;
+  }
+}
