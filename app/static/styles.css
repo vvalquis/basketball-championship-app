@@ -2310,3 +2310,66 @@ body:not(.admin-logged) #maintenanceMenuGroup.maintenance-menu-group:not(.is-vis
     margin-bottom: .7rem !important;
   }
 }
+
+/* =========================================================
+   MENU POR ESTADO DE LOGIN - 2026-06-01
+   Sin login: Inicio, Equipos, Partidos, Posiciones, Estadísticas, Jugadores.
+   Con login: Inicio + opciones directas de mantenimiento.
+   ========================================================= */
+.main-nav .hidden {
+  display: none !important;
+}
+
+.main-nav .admin-menu-link {
+  display: none !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-height: 44px !important;
+  padding: .72rem .95rem !important;
+  margin: 0 !important;
+  border-radius: 15px !important;
+  border: 1px solid rgba(120, 40, 0, .18) !important;
+  background: rgba(255, 255, 255, .72) !important;
+  color: #2a0d03 !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  font-family: inherit !important;
+  font-size: .95rem !important;
+  font-weight: 1000 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .045em !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+body.admin-logged .main-nav .public-only,
+body.logged-in .main-nav .public-only,
+body.is-authenticated .main-nav .public-only {
+  display: none !important;
+}
+
+body.admin-logged .main-nav .admin-menu-link:not(.hidden),
+body.logged-in .main-nav .admin-menu-link:not(.hidden),
+body.is-authenticated .main-nav .admin-menu-link:not(.hidden) {
+  display: flex !important;
+}
+
+body:not(.admin-logged) .main-nav .admin-menu-link,
+body:not(.logged-in) .main-nav .admin-menu-link,
+body:not(.is-authenticated) .main-nav .admin-menu-link {
+  display: none !important;
+}
+
+.main-nav .admin-menu-link:hover,
+.main-nav .admin-menu-link.active {
+  background: linear-gradient(135deg, #2a0d03, #7f1d1d) !important;
+  color: #fff7ed !important;
+  border-color: rgba(255,122,0,.55) !important;
+  transform: translateX(4px) !important;
+}
+
+/* Desactiva el antiguo grupo de mantenimiento si quedó en caché o en versiones previas. */
+#maintenanceMenuGroup {
+  display: none !important;
+}

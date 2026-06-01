@@ -654,64 +654,26 @@ function isLoggedIn() {
 
 
 function ensureMaintenanceMenuGroup() {
-  const nav = document.getElementById('mainNav');
-  if (!nav) return null;
-
-  // Elimina accesos antiguos sueltos, por ejemplo "MANT. EQUIPOS", para evitar duplicados.
-  Array.from(nav.children).forEach((child) => {
-    const text = (child.textContent || '').trim().toUpperCase();
-    const isLegacyMaintenance = text.startsWith('MANT.') && !child.classList.contains('maintenance-menu-link') && child.id !== 'maintenanceMenuGroup';
-    if (isLegacyMaintenance) child.remove();
-  });
-
-  let group = document.getElementById('maintenanceMenuGroup');
-  if (!group) {
-    group = document.createElement('div');
-    group.id = 'maintenanceMenuGroup';
-    group.className = 'maintenance-menu-group auth-only hidden';
-    group.setAttribute('aria-label', 'Opciones de mantenimiento');
-  }
-
-  group.innerHTML = `
-    <div class="maintenance-menu-title">Mantenimiento</div>
-    <div class="maintenance-menu-options">
-      <button type="button" class="maintenance-menu-link" data-maint-table="championships">Mant. Torneo</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="teams">Mant. Equipos</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="players">Mant. Jugadores</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="matches">Mant. Partidos</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="match_periods">Mant. Tiempos</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="player_match_stats">Mant. Estadísticas</button>
-    </div>
-  `;
-
-  // Ubica siempre el bloque Mantenimiento debajo de la opción Jugadores.
-  const jugadoresLink = nav.querySelector('[data-section-link="jugadores"]');
-  if (jugadoresLink && jugadoresLink.nextSibling !== group) {
-    jugadoresLink.insertAdjacentElement('afterend', group);
-  } else if (!jugadoresLink && group.parentElement !== nav) {
-    nav.appendChild(group);
-  }
-
-  return group;
+  // Ya no se usa un grupo contenedor "Mantenimiento".
+  // Las opciones administrativas se muestran como opciones directas del menú lateral.
+  return document.getElementById('mainNav');
 }
 
 function setMaintenanceMenuVisible(visible) {
-  const group = ensureMaintenanceMenuGroup();
-  if (!group) return;
+  const nav = document.getElementById('mainNav');
+  if (!nav) return;
 
-  group.classList.toggle('hidden', !visible);
-  group.classList.toggle('is-visible', visible);
-  group.setAttribute('aria-hidden', visible ? 'false' : 'true');
+  // Sin login: Inicio, Equipos, Partidos, Posiciones, Estadísticas, Jugadores.
+  // Con login: Inicio, Mant. Torneo, Mant. Equipos, Mant. Jugadores, Mant. Partidos, Mant. Tiempos, Mant. Estadísticas.
+  nav.querySelectorAll('.public-only').forEach((el) => {
+    el.classList.toggle('hidden', visible);
+    el.setAttribute('aria-hidden', visible ? 'true' : 'false');
+  });
 
-  if (visible) {
-    group.classList.remove('hidden');
-    group.style.setProperty('display', 'block', 'important');
-    group.style.setProperty('visibility', 'visible', 'important');
-    group.style.setProperty('opacity', '1', 'important');
-  } else {
-    group.classList.add('hidden');
-    group.style.setProperty('display', 'none', 'important');
-  }
+  nav.querySelectorAll('.admin-menu-link').forEach((el) => {
+    el.classList.toggle('hidden', !visible);
+    el.setAttribute('aria-hidden', visible ? 'false' : 'true');
+  });
 }
 
 function renderAuthState() {
@@ -720,7 +682,7 @@ function renderAuthState() {
   document.body.classList.toggle('is-authenticated', loggedIn);
   document.body.classList.toggle('logged-in', loggedIn);
   document.querySelectorAll('.auth-only').forEach((el) => {
-    if (el.id === 'maintenanceMenuGroup') return;
+    if (el.classList.contains('admin-menu-link')) return;
     el.classList.toggle('hidden', !loggedIn);
   });
   setMaintenanceMenuVisible(loggedIn);
@@ -1249,80 +1211,3 @@ function setupMaintenanceMenu() {
   });
 }
 
-
-/* =========================================================
-   FIX FINAL: menú de mantenimiento visible y compacto
-   ========================================================= */
-(function maintenanceMenuFinalFix() {
-  function hasAdminSession() {
-    try {
-      const raw = localStorage.getItem('fenix_admin_user');
-      const user = raw ? JSON.parse(raw) : null;
-      return Boolean(user && user.name);
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function rebuildMaintenanceMenu() {
-    const nav = document.getElementById('mainNav');
-    if (!nav) return;
-
-    let group = document.getElementById('maintenanceMenuGroup');
-    if (!group) {
-      group = document.createElement('div');
-      group.id = 'maintenanceMenuGroup';
-      group.className = 'maintenance-menu-group auth-only hidden';
-      group.setAttribute('aria-label', 'Opciones de mantenimiento');
-    }
-
-    group.innerHTML = `
-      <div class="maintenance-menu-title">Mantenimiento</div>
-      <div class="maintenance-menu-options">
-        <button type="button" class="maintenance-menu-link" data-maint-table="championships">Mant. Torneo</button>
-        <button type="button" class="maintenance-menu-link" data-maint-table="teams">Mant. Equipos</button>
-        <button type="button" class="maintenance-menu-link" data-maint-table="players">Mant. Jugadores</button>
-        <button type="button" class="maintenance-menu-link" data-maint-table="matches">Mant. Partidos</button>
-        <button type="button" class="maintenance-menu-link" data-maint-table="match_periods">Mant. Tiempos</button>
-        <button type="button" class="maintenance-menu-link" data-maint-table="player_match_stats">Mant. Estadísticas</button>
-      </div>
-    `;
-
-    const jugadores = nav.querySelector('[data-section-link="jugadores"]');
-    if (jugadores) jugadores.insertAdjacentElement('afterend', group);
-    else nav.appendChild(group);
-
-    const logged = hasAdminSession();
-    document.body.classList.toggle('admin-logged', logged);
-    document.body.classList.toggle('logged-in', logged);
-    document.body.classList.toggle('is-authenticated', logged);
-    group.classList.toggle('hidden', !logged);
-    group.classList.toggle('is-visible', logged);
-    group.setAttribute('aria-hidden', logged ? 'false' : 'true');
-    group.style.setProperty('display', logged ? 'block' : 'none', 'important');
-    group.style.setProperty('visibility', logged ? 'visible' : 'hidden', 'important');
-    group.style.setProperty('opacity', logged ? '1' : '0', 'important');
-
-    group.querySelectorAll('.maintenance-menu-link').forEach((button) => {
-      if (button.dataset.finalMaintenanceBound === '1') return;
-      button.dataset.finalMaintenanceBound = '1';
-      button.addEventListener('click', async (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        document.body.classList.remove('menu-open', 'side-menu-open');
-        if (typeof openMaintenanceModal === 'function') {
-          await openMaintenanceModal(button.dataset.maintTable);
-        }
-      });
-    });
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    rebuildMaintenanceMenu();
-    setTimeout(rebuildMaintenanceMenu, 300);
-    setTimeout(rebuildMaintenanceMenu, 1000);
-    document.getElementById('mobileMenuBtn')?.addEventListener('click', () => setTimeout(rebuildMaintenanceMenu, 80));
-    document.getElementById('loginForm')?.addEventListener('submit', () => setTimeout(rebuildMaintenanceMenu, 450));
-    document.getElementById('logoutBtn')?.addEventListener('click', () => setTimeout(rebuildMaintenanceMenu, 120));
-  });
-})();
