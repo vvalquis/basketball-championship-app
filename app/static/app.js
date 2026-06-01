@@ -1230,3 +1230,169 @@ function setupMaintenanceMenu() {
     }
   });
 }
+
+/*
+  FIX: Mostrar el bloque Mantenimiento debajo de Jugadores cuando el usuario está logeado.
+  Instrucción: copiar este contenido al FINAL de app/static/app.js.
+*/
+(function () {
+  const MAINT_ITEMS = [
+    { label: 'Mant. Torneo', table: 'championships', title: 'Mantenimiento de Torneo' },
+    { label: 'Mant. Equipos', table: 'teams', title: 'Mantenimiento de Equipos' },
+    { label: 'Mant. Jugadores', table: 'players', title: 'Mantenimiento de Jugadores' },
+    { label: 'Mant. Partidos', table: 'matches', title: 'Mantenimiento de Partidos' },
+    { label: 'Mant. Tiempos', table: 'match_periods', title: 'Mantenimiento de Tiempos' },
+    { label: 'Mant. Estadísticas', table: 'player_match_stats', title: 'Mantenimiento de Estadísticas' }
+  ];
+
+  function currentUserIsLoggedIn() {
+    const body = document.body;
+    const adminText = (document.querySelector('.user-name, #loggedUserName, #currentUserName, .login-user, .auth-user')?.textContent || '').trim();
+    const logoutBtn = document.querySelector('#logoutBtn, [data-logout], .logout-btn');
+    const loginBtn = document.querySelector('#loginBtn, [data-login], .login-btn');
+    const savedUser = localStorage.getItem('fenixUser') || localStorage.getItem('loggedUser') || localStorage.getItem('authUser') || localStorage.getItem('currentUser');
+
+    return Boolean(
+      body.classList.contains('logged-in') ||
+      body.classList.contains('is-authenticated') ||
+      savedUser ||
+      (logoutBtn && getComputedStyle(logoutBtn).display !== 'none') ||
+      (adminText && adminText.toLowerCase() !== 'invitado') ||
+      (loginBtn && getComputedStyle(loginBtn).display === 'none')
+    );
+  }
+
+  function findMainNav() {
+    return document.getElementById('mainNav') ||
+      document.querySelector('.main-nav') ||
+      document.querySelector('nav') ||
+      document.querySelector('.side-menu');
+  }
+
+  function findJugadoresMenuItem(nav) {
+    if (!nav) return null;
+    const candidates = Array.from(nav.querySelectorAll('a, button, .nav-link, .menu-link'));
+    return candidates.find(el => (el.textContent || '').trim().toLowerCase() === 'jugadores') || null;
+  }
+
+  function removeOldLooseMaintenanceItems(nav) {
+    if (!nav) return;
+    Array.from(nav.querySelectorAll('a, button, .nav-link, .menu-link')).forEach(el => {
+      const text = (el.textContent || '').trim().toLowerCase();
+      if (text.startsWith('mant.') && !el.closest('#maintenanceMenuGroup')) {
+        const wrapper = el.closest('li') || el.closest('.nav-item') || el;
+        wrapper.remove();
+      }
+    });
+  }
+
+  function createMaintenanceGroup() {
+    const group = document.createElement('div');
+    group.id = 'maintenanceMenuGroup';
+    group.className = 'maintenance-menu-group maintenance-visible-after-login';
+    group.innerHTML = `
+      <div class="maintenance-menu-title">Mantenimiento</div>
+      <div class="maintenance-menu-options">
+        ${MAINT_ITEMS.map(item => `
+          <button type="button" class="maintenance-menu-link" data-maint-table="${item.table}" data-maint-title="${item.title}">
+            ${item.label}
+          </button>
+        `).join('')}
+      </div>
+    `;
+    group.addEventListener('click', function (event) {
+      const button = event.target.closest('[data-maint-table]');
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeSideMenuIfOpen();
+      openMaintenanceWindow(button.dataset.maintTable, button.dataset.maintTitle || button.textContent.trim());
+    });
+    return group;
+  }
+
+  function closeSideMenuIfOpen() {
+    document.body.classList.remove('menu-open');
+    const overlay = document.getElementById('menuOverlay');
+    overlay?.setAttribute('aria-hidden', 'true');
+    const menuButton = document.getElementById('mobileMenuBtn');
+    menuButton?.setAttribute('aria-expanded', 'false');
+  }
+
+  function ensureMaintenanceMenuPosition() {
+    const nav = findMainNav();
+    if (!nav) return;
+
+    removeOldLooseMaintenanceItems(nav);
+
+    let group = document.getElementById('maintenanceMenuGroup');
+    if (!group) group = createMaintenanceGroup();
+
+    const jugadores = findJugadoresMenuItem(nav);
+    if (jugadores) {
+      const jugadoresContainer = jugadores.closest('li') || jugadores.closest('.nav-item') || jugadores;
+      jugadoresContainer.insertAdjacentElement('afterend', group);
+    } else {
+      nav.appendChild(group);
+    }
+
+    group.style.display = currentUserIsLoggedIn() ? 'block' : 'none';
+  }
+
+  async function openMaintenanceWindow(table, title) {
+    // Si ya existe una función de mantenimiento del proyecto, la reutilizamos.
+    const existingFns = [
+      window.openMaintenanceCrud,
+      window.openMaintenanceModal,
+      window.openMaintenance,
+      window.openCrudModal,
+      window.showMaintenance
+    ].filter(fn => typeof fn === 'function');
+
+    if (existingFns.length) {
+      existingFns[0](table, title);
+      return;
+    }
+
+    // Fallback visual para no dejar el botón sin respuesta.
+    const modal = document.getElementById('matchDetailModal') || document.querySelector('.modal');
+    const content = document.getElementById('matchDetailContent') || modal?.querySelector('.modal-content');
+    if (!modal || !content) {
+      alert(`${title}\nTabla: ${table}`);
+      return;
+    }
+
+    modal.classList.add('modal-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-is-open');
+    content.innerHTML = `
+      <div class="maintenance-modal-header">
+        <span class="eyebrow">Mantenimiento</span>
+        <h2>${title}</h2>
+        <p>Tabla asociada: <strong>${table}</strong></p>
+      </div>
+      <div class="maintenance-empty-state">
+        La opción ya está habilitada en el menú. Si esta pantalla aparece sin formulario, falta enlazar este botón con el CRUD existente de la aplicación para la tabla <strong>${table}</strong>.
+      </div>
+    `;
+  }
+
+  function refreshMaintenanceVisibility() {
+    ensureMaintenanceMenuPosition();
+    setTimeout(ensureMaintenanceMenuPosition, 100);
+    setTimeout(ensureMaintenanceMenuPosition, 400);
+  }
+
+  document.addEventListener('DOMContentLoaded', refreshMaintenanceVisibility);
+  document.addEventListener('click', function (event) {
+    const target = event.target;
+    if (target.closest('#loginBtn, [data-login], .login-btn, #logoutBtn, [data-logout], .logout-btn')) {
+      setTimeout(refreshMaintenanceVisibility, 300);
+      setTimeout(refreshMaintenanceVisibility, 900);
+    }
+  }, true);
+
+  window.addEventListener('storage', refreshMaintenanceVisibility);
+  window.addEventListener('resize', refreshMaintenanceVisibility);
+  window.ensureMaintenanceMenuPosition = ensureMaintenanceMenuPosition;
+})();

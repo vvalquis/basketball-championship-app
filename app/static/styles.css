@@ -2174,3 +2174,84 @@ body.side-menu-open .main-nav {
     margin-bottom: 1rem !important;
   }
 }
+
+/*
+  FIX: estilo del bloque Mantenimiento debajo de Jugadores.
+  Instrucción: copiar este contenido al FINAL de app/static/styles.css.
+*/
+#maintenanceMenuGroup,
+.maintenance-menu-group {
+  display: none;
+  width: 100%;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(88, 35, 14, 0.20);
+  clear: both;
+}
+
+body.logged-in #maintenanceMenuGroup,
+body.is-authenticated #maintenanceMenuGroup {
+  display: block;
+}
+
+.maintenance-menu-title {
+  margin: 0 0 10px 4px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5a1f0f;
+}
+
+.maintenance-menu-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.maintenance-menu-link {
+  width: 100%;
+  border: 1px solid rgba(88, 35, 14, 0.18);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #2a1008;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-align: left;
+  padding: 13px 16px;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(88, 35, 14, 0.08);
+}
+
+.maintenance-menu-link:hover,
+.maintenance-menu-link:focus {
+  background: linear-gradient(135deg, #ffb000, #ff6a00);
+  color: #180701;
+  outline: none;
+  transform: translateX(2px);
+}
+
+/* Fuerza scroll vertical y elimina desplazamiento lateral del menú */
+#mainNav,
+.main-nav,
+.side-menu {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  max-height: calc(100vh - var(--header-height, 92px)) !important;
+  padding-bottom: 40px !important;
+}
+
+#mainNav *,
+.main-nav *,
+.side-menu * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Evita que el grupo Mantenimiento se coloque al costado */
+#maintenanceMenuGroup {
+  float: none !important;
+  flex: 0 0 100% !important;
+  grid-column: 1 / -1 !important;
+}
