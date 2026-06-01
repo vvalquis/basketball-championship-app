@@ -403,7 +403,14 @@ async function loadSummary() {
       <div class="card"><h3>Equipos</h3><div class="metric">${summary.teams}</div><p>Franquicias participantes</p></div>
       <div class="card"><h3>Jugadores</h3><div class="metric">${summary.players}</div><p>Planteles registrados</p></div>
       <div class="card"><h3>Partidos</h3><div class="metric">${summary.matches}</div><p>${summary.finished_matches} finalizados</p></div>
-      <div class="card"><h3>Líder</h3><div class="metric">${escapeHtml(summary.leader?.team_name || '-')}</div><p>${summary.leader?.championship_points || 0} puntos</p></div>
+      <div class="card leader-card">
+        <h3>Líder</h3>
+        <div class="leader-team-block">
+          ${summary.leader ? teamLogo({ name: summary.leader.team_name, logo_url: summary.leader.logo_url }) : '<div class="team-logo">🏀</div>'}
+          <div class="leader-score">${summary.leader?.championship_points || 0} pts</div>
+          <p class="leader-team-name">${escapeHtml(summary.leader?.team_name || 'Sin líder')}</p>
+        </div>
+      </div>
     `;
   } catch (error) { showError('summaryCards', error); }
 }

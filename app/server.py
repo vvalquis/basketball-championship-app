@@ -163,6 +163,10 @@ class BasketballHandler(BaseHTTPRequestHandler):
             finished = len([m for m in matches if m.get("status") == "FINISHED"])
             scheduled = len([m for m in matches if m.get("status") == "SCHEDULED"])
             leader = standings[0] if standings else None
+            if leader and leader.get("team_id"):
+                leader_team = db.select("teams", {"select": "id,name,logo_url", "id": f"eq.{leader.get('team_id')}"})
+                if leader_team:
+                    leader["logo_url"] = leader_team[0].get("logo_url")
             return self._send_json({
                 "teams": len(teams),
                 "players": len(players),
