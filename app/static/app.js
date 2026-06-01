@@ -825,6 +825,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupMatchDetailModal();
   setupMatchTabs();
   setupLogin();
+  setupMaintenanceMenu();
   setupAuthEscapeHandler();
   restoreSession();
   await loadChampionships();
@@ -847,3 +848,330 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.addEventListener('orientationchange', () => setTimeout(applyHeaderOffset, 250));
   document.addEventListener('DOMContentLoaded', () => setTimeout(applyHeaderOffset, 50));
 })();
+
+
+/* =========================================================
+   Mantenimiento CRUD genérico
+   ========================================================= */
+const MAINTENANCE_TABLES = {
+  championships: {
+    title: 'Mant. Torneo',
+    subtitle: 'Mantenimiento de la tabla championships.',
+    endpoint: 'championships',
+    columns: ['id', 'name', 'season', 'category', 'start_date', 'end_date', 'status'],
+    fields: [
+      { name: 'name', label: 'Nombre', type: 'text', required: true },
+      { name: 'season', label: 'Temporada', type: 'text' },
+      { name: 'category', label: 'Categoría', type: 'text' },
+      { name: 'start_date', label: 'Fecha inicio', type: 'date' },
+      { name: 'end_date', label: 'Fecha fin', type: 'date' },
+      { name: 'status', label: 'Estado', type: 'select', options: ['ACTIVE', 'INACTIVE'] },
+    ],
+  },
+  teams: {
+    title: 'Mant. Equipos',
+    subtitle: 'Mantenimiento de la tabla teams.',
+    endpoint: 'teams',
+    columns: ['id', 'name', 'coach_name', 'logo_url', 'status'],
+    fields: [
+      { name: 'championship_id', label: 'Torneo', type: 'championship', required: true },
+      { name: 'name', label: 'Equipo', type: 'text', required: true },
+      { name: 'coach_name', label: 'Delegado', type: 'text' },
+      { name: 'logo_url', label: 'Logo URL', type: 'text' },
+      { name: 'status', label: 'Estado', type: 'select', options: ['ACTIVE', 'INACTIVE'] },
+    ],
+  },
+  players: {
+    title: 'Mant. Jugadores',
+    subtitle: 'Mantenimiento de la tabla players.',
+    endpoint: 'players',
+    columns: ['id', 'jersey_number', 'first_name', 'last_name', 'team_name', 'position', 'status'],
+    fields: [
+      { name: 'team_id', label: 'Equipo', type: 'team', required: true },
+      { name: 'first_name', label: 'Nombres', type: 'text', required: true },
+      { name: 'last_name', label: 'Apellidos', type: 'text', required: true },
+      { name: 'jersey_number', label: 'Número', type: 'number', required: true },
+      { name: 'position', label: 'Posición', type: 'text' },
+      { name: 'birth_date', label: 'Fecha nacimiento', type: 'date' },
+      { name: 'height_cm', label: 'Altura cm', type: 'number' },
+      { name: 'weight_kg', label: 'Peso kg', type: 'number' },
+      { name: 'status', label: 'Estado', type: 'select', options: ['ACTIVE', 'INACTIVE'] },
+    ],
+  },
+  matches: {
+    title: 'Mant. Partidos',
+    subtitle: 'Mantenimiento de la tabla matches.',
+    endpoint: 'matches',
+    columns: ['id', 'home_team_name', 'away_team_name', 'match_date', 'match_time', 'venue', 'status', 'score'],
+    fields: [
+      { name: 'championship_id', label: 'Torneo', type: 'championship', required: true },
+      { name: 'home_team_id', label: 'Equipo local', type: 'team', required: true },
+      { name: 'away_team_id', label: 'Equipo visitante', type: 'team', required: true },
+      { name: 'match_date', label: 'Fecha', type: 'date', required: true },
+      { name: 'match_time', label: 'Hora', type: 'time' },
+      { name: 'venue', label: 'Ubicación', type: 'text' },
+      { name: 'status', label: 'Estado', type: 'select', options: ['SCHEDULED', 'FINISHED', 'IN_PROGRESS', 'SUSPENDED', 'CANCELLED'] },
+      { name: 'home_score', label: 'Puntos local', type: 'number' },
+      { name: 'away_score', label: 'Puntos visitante', type: 'number' },
+    ],
+  },
+  match_periods: {
+    title: 'Mant. Tiempos',
+    subtitle: 'Mantenimiento de la tabla match_periods.',
+    endpoint: 'match_periods',
+    columns: ['id', 'match_id', 'period_number', 'home_score', 'away_score'],
+    fields: [
+      { name: 'match_id', label: 'Partido', type: 'match', required: true },
+      { name: 'period_number', label: 'Tiempo / cuarto', type: 'number', required: true },
+      { name: 'home_score', label: 'Puntos local', type: 'number' },
+      { name: 'away_score', label: 'Puntos visitante', type: 'number' },
+    ],
+  },
+  player_match_stats: {
+    title: 'Mant. Estadísticas',
+    subtitle: 'Mantenimiento de la tabla player_match_stats.',
+    endpoint: 'player_match_stats',
+    columns: ['id', 'match_id', 'player_name', 'team_name', 'points', 'fouls', 'points_triple', 'rebounds', 'assists'],
+    fields: [
+      { name: 'match_id', label: 'Partido', type: 'match', required: true },
+      { name: 'player_id', label: 'Jugador', type: 'player', required: true },
+      { name: 'team_id', label: 'Equipo', type: 'team', required: true },
+      { name: 'points', label: 'PTS', type: 'number' },
+      { name: 'fouls', label: 'Faltas', type: 'number' },
+      { name: 'points_triple', label: 'PTS (3)', type: 'number' },
+      { name: 'rebounds', label: 'REB', type: 'number' },
+      { name: 'assists', label: 'AST', type: 'number' },
+      { name: 'steals', label: 'ROB', type: 'number' },
+      { name: 'blocks', label: 'BLK', type: 'number' },
+      { name: 'turnovers', label: 'Pérdidas', type: 'number' },
+      { name: 'minutes_played', label: 'Minutos', type: 'number' },
+    ],
+  },
+};
+
+let maintenanceState = {
+  table: null,
+  recordId: null,
+  rows: [],
+  teams: [],
+  players: [],
+  matches: [],
+};
+
+function maintenanceLabel(column) {
+  const labels = {
+    id: 'ID', name: 'Nombre', season: 'Temporada', category: 'Categoría', start_date: 'Inicio', end_date: 'Fin', status: 'Estado',
+    coach_name: 'Delegado', logo_url: 'Logo', jersey_number: '#', first_name: 'Nombres', last_name: 'Apellidos', team_name: 'Equipo', position: 'Posición',
+    home_team_name: 'Local', away_team_name: 'Visitante', match_date: 'Fecha', match_time: 'Hora', venue: 'Ubicación', score: 'Marcador',
+    match_id: 'Partido', period_number: 'Tiempo', home_score: 'Local', away_score: 'Visitante', player_name: 'Jugador', points: 'PTS', fouls: 'Faltas', points_triple: 'PTS (3)', rebounds: 'REB', assists: 'AST'
+  };
+  return labels[column] || column;
+}
+
+function maintenanceDisplayValue(row, column) {
+  if (column === 'team_name') return row.team_name || row.teams?.name || '-';
+  if (column === 'player_name') return row.player_name || `${row.players?.first_name || ''} ${row.players?.last_name || ''}`.trim() || '-';
+  if (column === 'home_team_name') return row.home_team?.name || '-';
+  if (column === 'away_team_name') return row.away_team?.name || '-';
+  if (column === 'score') return `${row.home_score ?? 0} - ${row.away_score ?? 0}`;
+  if (column === 'logo_url' && row.logo_url) return `<span title="${escapeHtml(row.logo_url)}">URL</span>`;
+  return row[column] ?? '-';
+}
+
+async function loadMaintenanceLookups() {
+  const championshipId = getChampionshipId();
+  const [teams, players, matches] = await Promise.all([
+    api(`/api/maintenance/teams?championship_id=${championshipId}`),
+    api(`/api/maintenance/players?championship_id=${championshipId}`),
+    api(`/api/maintenance/matches?championship_id=${championshipId}`),
+  ]);
+  maintenanceState.teams = teams;
+  maintenanceState.players = players;
+  maintenanceState.matches = matches;
+}
+
+function maintenanceOptionList(type, currentValue) {
+  if (type === 'championship') {
+    return availableChampionships.map(champ => `<option value="${champ.id}" ${Number(currentValue || getChampionshipId()) === Number(champ.id) ? 'selected' : ''}>${escapeHtml(champ.name)}${champ.season ? ' · ' + escapeHtml(champ.season) : ''}</option>`).join('');
+  }
+  if (type === 'team') {
+    return maintenanceState.teams.map(team => `<option value="${team.id}" ${Number(currentValue) === Number(team.id) ? 'selected' : ''}>${escapeHtml(team.name)}</option>`).join('');
+  }
+  if (type === 'player') {
+    return maintenanceState.players.map(player => `<option value="${player.id}" ${Number(currentValue) === Number(player.id) ? 'selected' : ''}>#${escapeHtml(player.jersey_number || '-')} ${escapeHtml(player.first_name || '')} ${escapeHtml(player.last_name || '')}</option>`).join('');
+  }
+  if (type === 'match') {
+    return maintenanceState.matches.map(match => `<option value="${match.id}" ${Number(currentValue) === Number(match.id) ? 'selected' : ''}>${escapeHtml(match.match_date || '')} ${escapeHtml(match.match_time || '')} · ${escapeHtml(match.home_team?.name || 'Local')} vs ${escapeHtml(match.away_team?.name || 'Visitante')}</option>`).join('');
+  }
+  return '';
+}
+
+function renderMaintenanceForm(record = {}) {
+  const config = MAINTENANCE_TABLES[maintenanceState.table];
+  const form = document.getElementById('maintenanceForm');
+  if (!form || !config) return;
+
+  const fields = config.fields.map(field => {
+    let value = record[field.name];
+    if (field.name === 'championship_id' && !value) value = getChampionshipId();
+    const required = field.required ? 'required' : '';
+
+    if (['select', 'championship', 'team', 'player', 'match'].includes(field.type)) {
+      const options = field.type === 'select'
+        ? (field.options || []).map(opt => `<option value="${escapeHtml(opt)}" ${String(value || '') === String(opt) ? 'selected' : ''}>${escapeHtml(opt)}</option>`).join('')
+        : maintenanceOptionList(field.type, value);
+      return `<label>${escapeHtml(field.label)}<select name="${escapeHtml(field.name)}" ${required}><option value="">Seleccione...</option>${options}</select></label>`;
+    }
+
+    return `<label>${escapeHtml(field.label)}<input name="${escapeHtml(field.name)}" type="${escapeHtml(field.type || 'text')}" value="${escapeHtml(value ?? '')}" ${required} /></label>`;
+  }).join('');
+
+  form.innerHTML = `
+    ${fields}
+    <div class="maintenance-form-actions">
+      <button class="primary-button" type="submit">${maintenanceState.recordId ? 'Guardar cambios' : 'Insertar registro'}</button>
+      <button class="secondary-button" type="button" onclick="clearMaintenanceForm()">Limpiar</button>
+    </div>
+  `;
+}
+
+function renderMaintenanceTable() {
+  const config = MAINTENANCE_TABLES[maintenanceState.table];
+  const head = document.getElementById('maintenanceTableHead');
+  const body = document.getElementById('maintenanceTableBody');
+  if (!head || !body || !config) return;
+
+  head.innerHTML = `<tr>${config.columns.map(c => `<th>${escapeHtml(maintenanceLabel(c))}</th>`).join('')}<th>Acciones</th></tr>`;
+  body.innerHTML = maintenanceState.rows.map(row => `
+    <tr>
+      ${config.columns.map(c => `<td>${maintenanceDisplayValue(row, c)}</td>`).join('')}
+      <td>
+        <button class="edit-button" type="button" onclick="editMaintenanceRecord(${Number(row.id)})">Editar</button>
+        <button class="danger-button" type="button" onclick="deleteMaintenanceRecord(${Number(row.id)})">Eliminar</button>
+      </td>
+    </tr>
+  `).join('') || `<tr><td colspan="${config.columns.length + 1}">No hay registros disponibles.</td></tr>`;
+}
+
+async function loadMaintenanceRows() {
+  const config = MAINTENANCE_TABLES[maintenanceState.table];
+  if (!config) return;
+  const championshipId = getChampionshipId();
+  maintenanceState.rows = await api(`/api/maintenance/${config.endpoint}?championship_id=${championshipId}`);
+  renderMaintenanceTable();
+}
+
+async function openMaintenanceModal(table) {
+  if (!isLoggedIn()) return openLoginModal();
+  const config = MAINTENANCE_TABLES[table];
+  if (!config) return;
+
+  maintenanceState.table = table;
+  maintenanceState.recordId = null;
+  maintenanceState.rows = [];
+
+  document.querySelectorAll('.maintenance-menu-link').forEach(btn => btn.classList.toggle('active', btn.dataset.maintTable === table));
+  const modal = document.getElementById('maintenanceModal');
+  const title = document.getElementById('maintenanceTitle');
+  const subtitle = document.getElementById('maintenanceSubtitle');
+  const error = document.getElementById('maintenanceError');
+  if (title) title.textContent = config.title;
+  if (subtitle) subtitle.textContent = config.subtitle;
+  if (error) error.textContent = '';
+  modal?.classList.add('modal-open');
+  modal?.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-is-open');
+
+  await loadMaintenanceLookups();
+  renderMaintenanceForm({ championship_id: getChampionshipId() });
+  await loadMaintenanceRows();
+}
+
+function closeMaintenanceModal() {
+  const modal = document.getElementById('maintenanceModal');
+  modal?.classList.remove('modal-open');
+  modal?.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-is-open');
+  document.querySelectorAll('.maintenance-menu-link').forEach(btn => btn.classList.remove('active'));
+}
+
+function clearMaintenanceForm() {
+  maintenanceState.recordId = null;
+  renderMaintenanceForm({ championship_id: getChampionshipId() });
+}
+
+function editMaintenanceRecord(id) {
+  const record = maintenanceState.rows.find(row => Number(row.id) === Number(id));
+  if (!record) return;
+  maintenanceState.recordId = Number(id);
+  renderMaintenanceForm(record);
+  document.getElementById('maintenanceForm')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function deleteMaintenanceRecord(id) {
+  const config = MAINTENANCE_TABLES[maintenanceState.table];
+  if (!config || !confirm('¿Seguro que deseas eliminar este registro?')) return;
+  const error = document.getElementById('maintenanceError');
+  if (error) error.textContent = '';
+  try {
+    await api(`/api/maintenance/${config.endpoint}/${id}`, { method: 'DELETE' });
+    clearMaintenanceForm();
+    await loadMaintenanceRows();
+    await loadAll();
+  } catch (err) {
+    if (error) error.textContent = err.message;
+  }
+}
+
+function parseMaintenanceValue(field, value) {
+  if (value === '') return null;
+  if (field.type === 'number' || ['championship_id', 'team_id', 'home_team_id', 'away_team_id', 'winner_team_id', 'match_id', 'player_id', 'period_number'].includes(field.name)) {
+    return Number(value);
+  }
+  return value;
+}
+
+function setupMaintenanceMenu() {
+  document.querySelectorAll('.maintenance-menu-link').forEach((button) => {
+    button.addEventListener('click', async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      document.body.classList.remove('menu-open', 'side-menu-open');
+      await openMaintenanceModal(button.dataset.maintTable);
+    });
+  });
+
+  document.querySelectorAll('[data-close-maintenance]').forEach((el) => el.addEventListener('click', closeMaintenanceModal));
+  document.getElementById('maintenanceNewBtn')?.addEventListener('click', clearMaintenanceForm);
+  document.getElementById('maintenanceRefreshBtn')?.addEventListener('click', async () => {
+    await loadMaintenanceLookups();
+    await loadMaintenanceRows();
+  });
+
+  document.getElementById('maintenanceForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const config = MAINTENANCE_TABLES[maintenanceState.table];
+    if (!config) return;
+    const error = document.getElementById('maintenanceError');
+    if (error) error.textContent = '';
+
+    const formData = new FormData(event.currentTarget);
+    const payload = {};
+    config.fields.forEach(field => {
+      payload[field.name] = parseMaintenanceValue(field, formData.get(field.name));
+    });
+
+    try {
+      const method = maintenanceState.recordId ? 'PUT' : 'POST';
+      const url = maintenanceState.recordId
+        ? `/api/maintenance/${config.endpoint}/${maintenanceState.recordId}`
+        : `/api/maintenance/${config.endpoint}`;
+      await api(url, { method, body: JSON.stringify(payload) });
+      clearMaintenanceForm();
+      await loadMaintenanceRows();
+      await loadAll();
+    } catch (err) {
+      if (error) error.textContent = err.message;
+    }
+  });
+}

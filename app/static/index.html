@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fénix Rímac Basketball League</title>
-  <link rel="stylesheet" href="/styles.css?v=20260601-login-maintenance" />
+  <link rel="stylesheet" href="/styles.css?v=20260601-maintenance-crud" />
 </head>
 <body>
   <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
@@ -47,11 +47,15 @@
     <a href="#posiciones" data-section-link="posiciones">Posiciones</a>
     <a href="#stats" data-section-link="stats">Estadísticas</a>
     <a href="#jugadores" data-section-link="jugadores">Jugadores</a>
-    <a href="#mant-teams" class="auth-only hidden" data-section-link="mant-teams">Mant. Equipos</a>
-    <a href="#mant-players" class="auth-only hidden" data-section-link="mant-players">Mant. Jugadores</a>
-    <a href="#mant-matches" class="auth-only hidden" data-section-link="mant-matches">Mant. Partidos</a>
-    <a href="#mant-periods" class="auth-only hidden" data-section-link="mant-periods">Mant. Tiempos</a>
-    <a href="#mant-stats" class="auth-only hidden" data-section-link="mant-stats">Mant. Estadísticas</a>
+    <div id="maintenanceMenuGroup" class="maintenance-menu-group auth-only hidden" aria-label="Opciones de mantenimiento">
+      <div class="maintenance-menu-title">Mantenimiento</div>
+      <button type="button" class="maintenance-menu-link" data-maint-table="championships">Mant. Torneo</button>
+      <button type="button" class="maintenance-menu-link" data-maint-table="teams">Mant. Equipos</button>
+      <button type="button" class="maintenance-menu-link" data-maint-table="players">Mant. Jugadores</button>
+      <button type="button" class="maintenance-menu-link" data-maint-table="matches">Mant. Partidos</button>
+      <button type="button" class="maintenance-menu-link" data-maint-table="match_periods">Mant. Tiempos</button>
+      <button type="button" class="maintenance-menu-link" data-maint-table="player_match_stats">Mant. Estadísticas</button>
+    </div>
   </nav>
 
   <main>
@@ -142,64 +146,6 @@
         <div id="playersPagination" class="pagination-controls" aria-label="Paginación jugadores"></div>
       </div>
     </section>
-
-
-    <section id="mant-teams" class="section section-collapsible maintenance-section auth-only hidden">
-      <div class="section-title-row">
-        <h2>Mantenimiento de equipos</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
-      </div>
-      <div class="section-content">
-        <div class="maintenance-note">Consulta administrativa de la tabla <strong>teams</strong>.</div>
-        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Equipo</th><th>Delegado</th><th>Logo</th></tr></thead><tbody id="maintenanceTeamsTable"></tbody></table></div>
-      </div>
-    </section>
-
-    <section id="mant-players" class="section section-collapsible maintenance-section auth-only hidden">
-      <div class="section-title-row">
-        <h2>Mantenimiento de jugadores</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
-      </div>
-      <div class="section-content">
-        <div class="maintenance-note">Consulta administrativa de la tabla <strong>players</strong>.</div>
-        <div class="table-wrap"><table><thead><tr><th>ID</th><th>#</th><th>Jugador</th><th>Equipo</th><th>Posición</th></tr></thead><tbody id="maintenancePlayersTable"></tbody></table></div>
-      </div>
-    </section>
-
-    <section id="mant-matches" class="section section-collapsible maintenance-section auth-only hidden">
-      <div class="section-title-row">
-        <h2>Mantenimiento de partidos</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
-      </div>
-      <div class="section-content">
-        <div class="maintenance-note">Consulta administrativa de la tabla <strong>matches</strong>.</div>
-        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Local</th><th>Visitante</th><th>Fecha</th><th>Hora</th><th>Estado</th><th>Marcador</th></tr></thead><tbody id="maintenanceMatchesTable"></tbody></table></div>
-      </div>
-    </section>
-
-    <section id="mant-periods" class="section section-collapsible maintenance-section auth-only hidden">
-      <div class="section-title-row">
-        <h2>Mantenimiento de tiempos</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
-      </div>
-      <div class="section-content">
-        <div class="maintenance-note">Consulta administrativa de la tabla <strong>match_periods</strong>.</div>
-        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Partido</th><th>Tiempo</th><th>Local</th><th>Visitante</th></tr></thead><tbody id="maintenancePeriodsTable"></tbody></table></div>
-      </div>
-    </section>
-
-    <section id="mant-stats" class="section section-collapsible maintenance-section auth-only hidden">
-      <div class="section-title-row">
-        <h2>Mantenimiento de estadísticas</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
-      </div>
-      <div class="section-content">
-        <div class="maintenance-note">Consulta administrativa de la tabla <strong>player_match_stats</strong>.</div>
-        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Partido</th><th>Jugador</th><th>Equipo</th><th>PTS</th><th>FALTAS</th><th>PTS (3)</th><th>REB</th><th>AST</th></tr></thead><tbody id="maintenanceStatsTable"></tbody></table></div>
-      </div>
-    </section>
-
-
   </main>
 
   <div id="matchDetailModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="matchDetailTitle">
@@ -235,10 +181,39 @@
   </div>
 
 
+  <div id="maintenanceModal" class="modal maintenance-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="maintenanceTitle">
+    <div class="modal-backdrop" data-close-maintenance></div>
+    <div class="modal-panel maintenance-panel">
+      <button class="modal-close" type="button" aria-label="Cerrar mantenimiento" data-close-maintenance>×</button>
+      <div class="modal-header-block maintenance-header-block">
+        <span class="badge">Mantenimiento</span>
+        <h2 id="maintenanceTitle">Mantenimiento</h2>
+        <p id="maintenanceSubtitle">Inserta, modifica o elimina registros.</p>
+      </div>
+
+      <div id="maintenanceError" class="login-error" role="alert"></div>
+
+      <form id="maintenanceForm" class="maintenance-form"></form>
+
+      <div class="maintenance-toolbar">
+        <button id="maintenanceNewBtn" class="secondary-button" type="button">Nuevo</button>
+        <button id="maintenanceRefreshBtn" class="secondary-button" type="button">Actualizar</button>
+      </div>
+
+      <div class="table-wrap maintenance-table-wrap">
+        <table>
+          <thead id="maintenanceTableHead"></thead>
+          <tbody id="maintenanceTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
   <footer>
     <p>Fénix Rímac Basketball League</p>
   </footer>
 
-  <script src="/app.js?v=20260601-login-maintenance"></script>
+  <script src="/app.js?v=20260601-maintenance-crud"></script>
 </body>
 </html>
