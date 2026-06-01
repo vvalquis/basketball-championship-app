@@ -652,9 +652,51 @@ function isLoggedIn() {
   return Boolean(currentUser && currentUser.name);
 }
 
+
+function ensureMaintenanceMenuGroup() {
+  const nav = document.getElementById('mainNav');
+  if (!nav) return null;
+
+  // Elimina accesos antiguos sueltos, por ejemplo "MANT. EQUIPOS", para evitar duplicados.
+  Array.from(nav.children).forEach((child) => {
+    const text = (child.textContent || '').trim().toUpperCase();
+    const isLegacyMaintenance = text.startsWith('MANT.') && !child.classList.contains('maintenance-menu-link') && child.id !== 'maintenanceMenuGroup';
+    if (isLegacyMaintenance) child.remove();
+  });
+
+  let group = document.getElementById('maintenanceMenuGroup');
+  if (!group) {
+    group = document.createElement('div');
+    group.id = 'maintenanceMenuGroup';
+    group.className = 'maintenance-menu-group auth-only hidden';
+    group.setAttribute('aria-label', 'Opciones de mantenimiento');
+    group.innerHTML = `
+      <div class="maintenance-menu-title">Mantenimiento</div>
+      <button type="button" class="maintenance-menu-link" data-maint-table="championships">Mant. Torneo</button>
+      <button type="button" class="maintenance-menu-link" data-maint-table="teams">Mant. Equipos</button>
+      <button type="button" class="maintenance-menu-link" data-maint-table="players">Mant. Jugadores</button>
+      <button type="button" class="maintenance-menu-link" data-maint-table="matches">Mant. Partidos</button>
+      <button type="button" class="maintenance-menu-link" data-maint-table="match_periods">Mant. Tiempos</button>
+      <button type="button" class="maintenance-menu-link" data-maint-table="player_match_stats">Mant. Estadísticas</button>
+    `;
+    nav.appendChild(group);
+  }
+  return group;
+}
+
+function setMaintenanceMenuVisible(visible) {
+  const group = ensureMaintenanceMenuGroup();
+  if (!group) return;
+  group.classList.toggle('hidden', !visible);
+  group.classList.toggle('is-visible', visible);
+  group.style.display = visible ? 'block' : 'none';
+  group.setAttribute('aria-hidden', visible ? 'false' : 'true');
+}
+
 function renderAuthState() {
   const loggedIn = isLoggedIn();
   document.querySelectorAll('.auth-only').forEach((el) => el.classList.toggle('hidden', !loggedIn));
+  setMaintenanceMenuVisible(loggedIn);
 
   const loginBtn = document.getElementById('loginBtn');
   const userBox = document.getElementById('loggedUserBox');
@@ -825,6 +867,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupMatchDetailModal();
   setupMatchTabs();
   setupLogin();
+  ensureMaintenanceMenuGroup();
   setupMaintenanceMenu();
   setupAuthEscapeHandler();
   restoreSession();
@@ -1132,7 +1175,10 @@ function parseMaintenanceValue(field, value) {
 }
 
 function setupMaintenanceMenu() {
+  ensureMaintenanceMenuGroup();
   document.querySelectorAll('.maintenance-menu-link').forEach((button) => {
+    if (button.dataset.maintenanceBound === '1') return;
+    button.dataset.maintenanceBound = '1';
     button.addEventListener('click', async (event) => {
       event.preventDefault();
       event.stopPropagation();

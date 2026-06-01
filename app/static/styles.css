@@ -2041,3 +2041,15 @@ body.modal-is-open .topbar {
     flex: 1 1 auto;
   }
 }
+
+
+/* FIX: mostrar grupo Mantenimiento luego del login y evitar duplicados ocultos */
+.maintenance-menu-group.is-visible {
+  display: block !important;
+}
+.maintenance-menu-group.hidden {
+  display: none !important;
+}
+.maintenance-menu-group .maintenance-menu-link {
+  display: flex !important;
+}
