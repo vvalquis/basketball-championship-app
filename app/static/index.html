@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fénix Rímac Basketball League</title>
-  <link rel="stylesheet" href="/styles.css?v=20260601-maint-after-jugadores" />
+  <link rel="stylesheet" href="/styles.css?v=20260601-menu-admin-redesign" />
 </head>
 <body>
   <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
@@ -49,12 +49,14 @@
     <a href="#jugadores" data-section-link="jugadores">Jugadores</a>
     <div id="maintenanceMenuGroup" class="maintenance-menu-group auth-only hidden" aria-label="Opciones de mantenimiento">
       <div class="maintenance-menu-title">Mantenimiento</div>
-      <button type="button" class="maintenance-menu-link" data-maint-table="championships">Mant. Torneo</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="teams">Mant. Equipos</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="players">Mant. Jugadores</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="matches">Mant. Partidos</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="match_periods">Mant. Tiempos</button>
-      <button type="button" class="maintenance-menu-link" data-maint-table="player_match_stats">Mant. Estadísticas</button>
+      <div class="maintenance-menu-options">
+        <button type="button" class="maintenance-menu-link" data-maint-table="championships">Mant. Torneo</button>
+        <button type="button" class="maintenance-menu-link" data-maint-table="teams">Mant. Equipos</button>
+        <button type="button" class="maintenance-menu-link" data-maint-table="players">Mant. Jugadores</button>
+        <button type="button" class="maintenance-menu-link" data-maint-table="matches">Mant. Partidos</button>
+        <button type="button" class="maintenance-menu-link" data-maint-table="match_periods">Mant. Tiempos</button>
+        <button type="button" class="maintenance-menu-link" data-maint-table="player_match_stats">Mant. Estadísticas</button>
+      </div>
     </div>
   </nav>
 
@@ -214,6 +216,6 @@
     <p>Fénix Rímac Basketball League</p>
   </footer>
 
-  <script src="/app.js?v=20260601-maint-after-jugadores"></script>
+  <script src="/app.js?v=20260601-menu-admin-redesign"></script>
 </body>
 </html>

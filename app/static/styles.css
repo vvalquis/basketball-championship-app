@@ -2175,152 +2175,138 @@ body.side-menu-open .main-nav {
   }
 }
 
-/*
-  FIX: estilo del bloque Mantenimiento debajo de Jugadores.
-  Instrucción: copiar este contenido al FINAL de app/static/styles.css.
-*/
-#maintenanceMenuGroup,
-.maintenance-menu-group {
-  display: none;
-  width: 100%;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(88, 35, 14, 0.20);
-  clear: both;
-}
-
-body.logged-in #maintenanceMenuGroup,
-body.is-authenticated #maintenanceMenuGroup {
-  display: block;
-}
-
-.maintenance-menu-title {
-  margin: 0 0 10px 4px;
-  font-size: 0.78rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #5a1f0f;
-}
-
-.maintenance-menu-options {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-}
-
-.maintenance-menu-link {
-  width: 100%;
-  border: 1px solid rgba(88, 35, 14, 0.18);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
-  color: #2a1008;
-  font-weight: 900;
-  letter-spacing: 0.03em;
-  text-align: left;
-  padding: 13px 16px;
-  cursor: pointer;
-  box-shadow: 0 8px 18px rgba(88, 35, 14, 0.08);
-}
-
-.maintenance-menu-link:hover,
-.maintenance-menu-link:focus {
-  background: linear-gradient(135deg, #ffb000, #ff6a00);
-  color: #180701;
-  outline: none;
-  transform: translateX(2px);
-}
-
-/* Fuerza scroll vertical y elimina desplazamiento lateral del menú */
-#mainNav,
-.main-nav,
-.side-menu {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  max-height: calc(100vh - var(--header-height, 92px)) !important;
-  padding-bottom: 40px !important;
-}
-
-#mainNav *,
-.main-nav *,
-.side-menu * {
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Evita que el grupo Mantenimiento se coloque al costado */
-#maintenanceMenuGroup {
-  float: none !important;
-  flex: 0 0 100% !important;
-  grid-column: 1 / -1 !important;
-}
-
 /* =========================================================
-   FIX FINAL: bloque mantenimiento visible y vertical
+   FIX FINAL: menú lateral compacto para ver Mantenimiento
    ========================================================= */
-#mainNav,
-.main-nav {
+body.menu-open .main-nav.side-menu,
+body.side-menu-open .main-nav.side-menu,
+.main-nav.side-menu {
   display: flex !important;
   flex-direction: column !important;
-  align-items: stretch !important;
+  width: min(88vw, 360px) !important;
+  max-width: min(88vw, 360px) !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
-  max-height: calc(100vh - var(--fixed-header-height, 96px) - 40px) !important;
-  padding-bottom: 48px !important;
+  padding: 1rem .75rem calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important;
+  gap: .52rem !important;
 }
 
-#maintenanceMenuGroup.force-maintenance-menu,
+.main-nav.side-menu a {
+  min-height: 44px !important;
+  padding: .72rem .95rem !important;
+  margin: 0 !important;
+  border-radius: 15px !important;
+}
+
 #maintenanceMenuGroup.maintenance-menu-group {
-  width: 100% !important;
-  min-width: 0 !important;
-  margin-top: 14px !important;
-  padding-top: 14px !important;
-  border-top: 1px solid rgba(90, 34, 20, 0.22) !important;
+  order: 999 !important;
   flex: 0 0 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: .45rem 0 1rem !important;
+  padding: .62rem !important;
+  border: 1px solid rgba(92, 28, 6, .22) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,226,165,.58)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 10px 24px rgba(70,22,0,.10) !important;
+  overflow: visible !important;
 }
 
-#maintenanceMenuGroup.hidden {
-  display: none !important;
-}
-
-#maintenanceMenuGroup.is-visible,
-#maintenanceMenuGroup:not(.hidden) {
+body.admin-logged #maintenanceMenuGroup.maintenance-menu-group,
+body.logged-in #maintenanceMenuGroup.maintenance-menu-group,
+body.is-authenticated #maintenanceMenuGroup.maintenance-menu-group,
+#maintenanceMenuGroup.maintenance-menu-group.is-visible {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
 }
 
+body:not(.admin-logged) #maintenanceMenuGroup.maintenance-menu-group:not(.is-visible) {
+  display: none !important;
+}
+
 #maintenanceMenuGroup .maintenance-menu-title {
-  display: block !important;
-  margin: 4px 0 10px !important;
-  padding: 0 16px !important;
-  color: #5a2214 !important;
-  font-size: 0.82rem !important;
-  font-weight: 900 !important;
-  letter-spacing: 0.12em !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: .45rem !important;
+  margin: 0 0 .45rem !important;
+  padding: .15rem .35rem .4rem !important;
+  color: #431407 !important;
+  font-size: .82rem !important;
+  font-weight: 1000 !important;
+  letter-spacing: .08em !important;
   text-transform: uppercase !important;
+  border-bottom: 1px solid rgba(92,28,6,.18) !important;
+}
+
+#maintenanceMenuGroup .maintenance-menu-title::before {
+  content: "⚙" !important;
+  display: inline-flex !important;
+  width: 24px !important;
+  height: 24px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  background: #ff9f1a !important;
+  color: #2a0d03 !important;
+  font-size: .78rem !important;
+}
+
+#maintenanceMenuGroup .maintenance-menu-options {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: .36rem !important;
 }
 
 #maintenanceMenuGroup .maintenance-menu-link {
-  display: block !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 36px !important;
   width: 100% !important;
-  margin: 8px 0 !important;
-  padding: 15px 18px !important;
-  border-radius: 18px !important;
-  border: 1px solid rgba(90, 34, 20, 0.16) !important;
-  background: rgba(255, 248, 236, 0.92) !important;
-  color: #2c130d !important;
-  font-weight: 900 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: .52rem .72rem !important;
+  border: 1px solid rgba(92, 28, 6, .14) !important;
+  border-radius: 12px !important;
+  background: rgba(255,255,255,.82) !important;
+  color: #2a0d03 !important;
   text-align: left !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.04em !important;
+  font-weight: 950 !important;
+  font-size: .82rem !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
   cursor: pointer !important;
-  box-shadow: 0 8px 18px rgba(42, 15, 8, 0.06) !important;
+  transform: none !important;
 }
 
-#maintenanceMenuGroup .maintenance-menu-link:hover {
-  transform: translateX(3px) !important;
-  background: #fff4dd !important;
-  border-color: rgba(255, 145, 0, 0.5) !important;
+#maintenanceMenuGroup .maintenance-menu-link::before {
+  content: "›" !important;
+  margin-right: .45rem !important;
+  color: #ff7a00 !important;
+  font-size: 1.1rem !important;
+  line-height: 1 !important;
+}
+
+#maintenanceMenuGroup .maintenance-menu-link:hover,
+#maintenanceMenuGroup .maintenance-menu-link.active {
+  background: linear-gradient(135deg, #3a0f02, #7c2d12) !important;
+  color: #fff7ed !important;
+  border-color: rgba(255,159,26,.65) !important;
+}
+
+@media (max-height: 760px) {
+  .main-nav.side-menu a {
+    min-height: 38px !important;
+    padding: .58rem .86rem !important;
+  }
+  #maintenanceMenuGroup .maintenance-menu-link {
+    min-height: 32px !important;
+    padding: .42rem .62rem !important;
+    font-size: .78rem !important;
+  }
+  #maintenanceMenuGroup.maintenance-menu-group {
+    padding: .5rem !important;
+    margin-bottom: .7rem !important;
+  }
 }
