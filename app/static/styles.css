@@ -1684,3 +1684,43 @@ main {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
+
+/* =========================================================
+   FIX: ventanas de detalle siempre debajo de la cabecera fija
+   ========================================================= */
+.modal {
+  top: var(--fixed-header-height) !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  height: calc(100dvh - var(--fixed-header-height)) !important;
+  z-index: 2400 !important;
+}
+
+.modal-backdrop {
+  top: 0 !important;
+  height: 100% !important;
+}
+
+.modal-panel {
+  margin: .85rem auto !important;
+  max-height: calc(100dvh - var(--fixed-header-height) - 1.7rem) !important;
+  overflow: auto !important;
+}
+
+.modal-close {
+  top: .25rem !important;
+}
+
+body.modal-is-open .topbar {
+  z-index: 3000 !important;
+}
+
+@media (max-width: 600px) {
+  .modal-panel {
+    width: calc(100vw - .75rem) !important;
+    margin: .55rem auto !important;
+    max-height: calc(100dvh - var(--fixed-header-height) - 1.1rem) !important;
+  }
+}

@@ -210,6 +210,12 @@ function closeMatchDetail() {
   document.body.classList.remove('modal-is-open');
 }
 
+
+function resetDetailModalScroll() {
+  const panel = document.querySelector('#matchDetailModal .modal-panel');
+  if (panel) panel.scrollTop = 0;
+}
+
 async function openTeamPlayers(teamId) {
   const modal = document.getElementById('matchDetailModal');
   const content = document.getElementById('matchDetailContent');
@@ -218,6 +224,7 @@ async function openTeamPlayers(teamId) {
   modal.classList.add('modal-open');
   modal.setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-is-open');
+  resetDetailModalScroll();
   content.innerHTML = `
     <div class="modal-header-block">
       <span class="badge">Plantel</span>
@@ -276,6 +283,7 @@ async function openMatchDetail(matchId) {
   modal.classList.add('modal-open');
   modal.setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-is-open');
+  resetDetailModalScroll();
   content.innerHTML = '<div class="loading-detail">Cargando detalle del partido...</div>';
 
   try {
