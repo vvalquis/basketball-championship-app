@@ -6,7 +6,7 @@ import re
 from datetime import date, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict
 from urllib.parse import parse_qs, urlparse
 
 from app.supabase_client import SupabaseClient, SupabaseError
@@ -19,6 +19,8 @@ CONTENT_TYPES = {
     ".css": "text/css; charset=utf-8",
     ".js": "application/javascript; charset=utf-8",
     ".json": "application/json; charset=utf-8",
+    ".txt": "text/plain; charset=utf-8",
+    ".xml": "application/xml; charset=utf-8",
     ".png": "image/png",
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
@@ -141,16 +143,17 @@ class BasketballHandler(BaseHTTPRequestHandler):
         else:
             safe = path.lstrip("/")
             file_path = STATIC_DIR / safe
+
         if not file_path.exists() or not file_path.is_file():
             self.send_error(404, "Archivo no encontrado")
             return
+
         content = file_path.read_bytes()
         self.send_response(200)
         self.send_header("Content-Type", CONTENT_TYPES.get(file_path.suffix, "application/octet-stream"))
         self.send_header("Content-Length", str(len(content)))
         self.end_headers()
         self.wfile.write(content)
-
 
     def _maintenance_allowed(self) -> Dict[str, Dict[str, Any]]:
         return {
@@ -166,12 +169,14 @@ class BasketballHandler(BaseHTTPRequestHandler):
         allowed = self._maintenance_allowed().get(table)
         if not allowed:
             raise ValueError("Tabla de mantenimiento no permitida")
+
         numeric_fields = {
             "championship_id", "team_id", "home_team_id", "away_team_id", "winner_team_id",
             "jersey_number", "height_cm", "weight_kg", "home_score", "away_score",
             "match_id", "period_number", "player_id", "points", "rebounds", "assists",
             "steals", "blocks", "fouls", "turnovers", "minutes_played", "points_triple",
         }
+
         payload: Dict[str, Any] = {}
         for field in allowed["fields"]:
             if field not in body:
@@ -202,14 +207,7 @@ class BasketballHandler(BaseHTTPRequestHandler):
             data = db.select("matches", {"select": "*", "championship_id": f"eq.{championship_id}", "order": "match_date.desc,match_time.asc"})
             data = sorted(data, key=lambda m: (m.get("match_date") or "1900-01-01", m.get("match_time") or "00:00:00"))
             data = sorted(data, key=lambda m: m.get("match_date") or "1900-01-01", reverse=True)
-            team_ids = sorted({str(m.get("home_team_id")) for m in data if m.get("home_team_id")} | {str(m.get("away_team_id")) for m in data if m.get("away_team_id")})
-            teams_by_id = {}
-            if team_ids:
-                teams = db.select("teams", {"select": "id,name,logo_url", "id": f"in.({','.join(team_ids)})"})
-                teams_by_id = {str(team.get("id")): team for team in teams}
-            for match in data:
-                match["home_team"] = teams_by_id.get(str(match.get("home_team_id")), {"name": "Local"})
-                match["away_team"] = teams_by_id.get(str(match.get("away_team_id")), {"name": "Visitante"})
+            self._attach_match_teams(db, data)
             return data
 
         if table == "match_periods":
@@ -227,7 +225,7 @@ class BasketballHandler(BaseHTTPRequestHandler):
             data = db.select("player_match_stats", {
                 "select": "*,players(first_name,last_name,jersey_number),teams(name)",
                 "team_id": f"in.({','.join(allowed_team_ids)})",
-                "order": "match_id.desc,points.desc"
+                "order": "match_id.desc,points.desc",
             })
             for row in data:
                 player = row.get("players") or {}
@@ -237,6 +235,19 @@ class BasketballHandler(BaseHTTPRequestHandler):
             return data
 
         return []
+
+    def _attach_match_teams(self, db: SupabaseClient, matches: Any) -> None:
+        team_ids = sorted(
+            {str(m.get("home_team_id")) for m in matches if m.get("home_team_id")}
+            | {str(m.get("away_team_id")) for m in matches if m.get("away_team_id")}
+        )
+        teams_by_id = {}
+        if team_ids:
+            teams = db.select("teams", {"select": "id,name,logo_url", "id": f"in.({','.join(team_ids)})"})
+            teams_by_id = {str(team.get("id")): team for team in teams}
+        for match in matches:
+            match["home_team"] = teams_by_id.get(str(match.get("home_team_id")), {"name": "Local"})
+            match["away_team"] = teams_by_id.get(str(match.get("away_team_id")), {"name": "Visitante"})
 
     def _handle_get_api(self, path: str, params: Dict[str, Any]) -> None:
         db = self._client()
@@ -250,30 +261,18 @@ class BasketballHandler(BaseHTTPRequestHandler):
                 "name": "Basketball Championship API",
                 "database": "Supabase PostgreSQL via REST API",
                 "endpoints": [
-                    "GET /api/summary",
-                    "GET /api/championships",
-                    "GET /api/teams?championship_id=1",
-                    "POST /api/teams",
-                    "GET /api/teams/{id}",
-                    "GET /api/players",
-                    "POST /api/players",
-                    "GET /api/matches?championship_id=1",
-                    "POST /api/matches",
-                    "GET /api/matches/{id}",
-                    "PUT /api/matches/{id}/result",
-                    "GET /api/standings?championship_id=1",
-                    "GET /api/stats/players",
-                    "POST /api/auth/login",
-                    "GET /api/maintenance/{table}",
-                    "POST /api/maintenance/{table}",
-                    "PUT /api/maintenance/{table}/{id}",
-                    "DELETE /api/maintenance/{table}/{id}"
-                ]
+                    "GET /api/summary", "GET /api/championships", "GET /api/teams?championship_id=1",
+                    "POST /api/teams", "GET /api/teams/{id}", "GET /api/players", "POST /api/players",
+                    "GET /api/matches?championship_id=1", "POST /api/matches", "GET /api/matches/{id}",
+                    "PUT /api/matches/{id}/result", "GET /api/standings?championship_id=1",
+                    "GET /api/stats/players", "POST /api/auth/login",
+                    "GET /api/maintenance/{table}", "POST /api/maintenance/{table}",
+                    "PUT /api/maintenance/{table}/{id}", "DELETE /api/maintenance/{table}/{id}",
+                ],
             })
 
         if path == "/api/championships":
-            data = db.select("championships", {"select": "*", "order": "id.asc"})
-            return self._send_json(data)
+            return self._send_json(db.select("championships", {"select": "*", "order": "id.asc"}))
 
         if path == "/api/summary":
             teams = db.select("teams", {"select": "id", "championship_id": f"eq.{championship_id}"})
@@ -297,8 +296,7 @@ class BasketballHandler(BaseHTTPRequestHandler):
             })
 
         if path == "/api/teams":
-            data = db.select("teams", {"select": "*", "championship_id": f"eq.{championship_id}", "order": "name.asc"})
-            return self._send_json(data)
+            return self._send_json(db.select("teams", {"select": "*", "championship_id": f"eq.{championship_id}", "order": "name.asc"}))
 
         match_team = re.match(r"^/api/teams/(\d+)$", path)
         if match_team:
@@ -322,20 +320,9 @@ class BasketballHandler(BaseHTTPRequestHandler):
 
         if path == "/api/matches":
             data = db.select("matches", {"select": "*", "championship_id": f"eq.{championship_id}", "order": "match_date.desc,match_time.asc"})
-            # Refuerzo del orden en backend: fecha mayor a menor y hora menor a mayor.
-            data = sorted(
-                data,
-                key=lambda m: (m.get("match_date") or "1900-01-01", m.get("match_time") or "00:00:00"),
-            )
+            data = sorted(data, key=lambda m: (m.get("match_date") or "1900-01-01", m.get("match_time") or "00:00:00"))
             data = sorted(data, key=lambda m: m.get("match_date") or "1900-01-01", reverse=True)
-            team_ids = sorted({str(m.get("home_team_id")) for m in data if m.get("home_team_id")} | {str(m.get("away_team_id")) for m in data if m.get("away_team_id")})
-            teams_by_id = {}
-            if team_ids:
-                teams = db.select("teams", {"select": "id,name,logo_url", "id": f"in.({','.join(team_ids)})"})
-                teams_by_id = {str(team.get("id")): team for team in teams}
-            for match in data:
-                match["home_team"] = teams_by_id.get(str(match.get("home_team_id")), {"name": "Local"})
-                match["away_team"] = teams_by_id.get(str(match.get("away_team_id")), {"name": "Visitante"})
+            self._attach_match_teams(db, data)
             return self._send_json(data)
 
         match_detail = re.match(r"^/api/matches/(\d+)$", path)
@@ -353,10 +340,8 @@ class BasketballHandler(BaseHTTPRequestHandler):
             response["home_team"] = teams_by_id.get(str(response.get("home_team_id")), {"name": "Local"})
             response["away_team"] = teams_by_id.get(str(response.get("away_team_id")), {"name": "Visitante"})
             response["winner_team"] = teams_by_id.get(str(response.get("winner_team_id"))) if response.get("winner_team_id") else None
-            periods = db.select("match_periods", {"select": "*", "match_id": f"eq.{match_id}", "order": "period_number.asc"})
-            stats = db.select("player_match_stats", {"select": "*,players(first_name,last_name,jersey_number),teams(name)", "match_id": f"eq.{match_id}", "order": "points.desc,points_triple.desc,fouls.desc"})
-            response["periods"] = periods
-            response["player_stats"] = stats
+            response["periods"] = db.select("match_periods", {"select": "*", "match_id": f"eq.{match_id}", "order": "period_number.asc"})
+            response["player_stats"] = db.select("player_match_stats", {"select": "*,players(first_name,last_name,jersey_number),teams(name)", "match_id": f"eq.{match_id}", "order": "points.desc,points_triple.desc,fouls.desc"})
             return self._send_json(response)
 
         if path == "/api/standings":
@@ -366,14 +351,12 @@ class BasketballHandler(BaseHTTPRequestHandler):
         if path == "/api/stats/players":
             championship_teams = db.select("teams", {"select": "id", "championship_id": f"eq.{championship_id}"})
             allowed_team_ids = {str(team.get("id")) for team in championship_teams}
-
             if not allowed_team_ids:
                 return self._send_json([])
-
             data = db.select("player_match_stats", {
                 "select": "team_id,points,points_triple,rebounds,assists,steals,blocks,fouls,players(first_name,last_name,jersey_number),teams(name)",
                 "team_id": f"in.({','.join(sorted(allowed_team_ids))})",
-                "order": "points.desc"
+                "order": "points.desc",
             })
             aggregated: Dict[str, Dict[str, Any]] = {}
             for row in data:
@@ -399,6 +382,7 @@ class BasketballHandler(BaseHTTPRequestHandler):
                     aggregated[key][field] += int(row.get(field) or 0)
             ranking = sorted(aggregated.values(), key=lambda item: item["points"], reverse=True)
             return self._send_json(ranking)
+
         maintenance_match = re.match(r"^/api/maintenance/(championships|teams|players|matches|match_periods|player_match_stats)$", path)
         if maintenance_match:
             table = maintenance_match.group(1)
@@ -415,26 +399,15 @@ class BasketballHandler(BaseHTTPRequestHandler):
             password = str(body.get("password", ""))
             if not name or not password:
                 return self._send_error("Nombre y contraseña son obligatorios", 400)
-
             users = db.select("users", {"select": "id,name,email,role,status,password_hash", "name": f"eq.{name}"})
             if not users:
                 return self._send_error("Usuario o contraseña incorrectos", 401)
-
             user = users[0]
             if str(user.get("status", "ACTIVE")).upper() != "ACTIVE":
                 return self._send_error("Usuario inactivo", 403)
-
             if not verify_password(password, str(user.get("password_hash", ""))):
                 return self._send_error("Usuario o contraseña incorrectos", 401)
-
-            return self._send_json({
-                "user": {
-                    "id": user.get("id"),
-                    "name": user.get("name"),
-                    "email": user.get("email"),
-                    "role": user.get("role"),
-                }
-            })
+            return self._send_json({"user": {"id": user.get("id"), "name": user.get("name"), "email": user.get("email"), "role": user.get("role")}})
 
         if path == "/api/teams":
             payload = {
@@ -475,7 +448,6 @@ class BasketballHandler(BaseHTTPRequestHandler):
                 return self._send_error("El equipo local y visitante deben ser diferentes", 400)
             return self._send_json(db.insert("matches", payload), 201)
 
-
         maintenance_post = re.match(r"^/api/maintenance/(championships|teams|players|matches|match_periods|player_match_stats)$", path)
         if maintenance_post:
             table = maintenance_post.group(1)
@@ -491,6 +463,7 @@ class BasketballHandler(BaseHTTPRequestHandler):
 
     def _handle_put_api(self, path: str, body: Dict[str, Any]) -> None:
         db = self._client()
+
         result_match = re.match(r"^/api/matches/(\d+)/result$", path)
         if result_match:
             match_id = result_match.group(1)
@@ -505,13 +478,7 @@ class BasketballHandler(BaseHTTPRequestHandler):
                 winner_team_id = match["home_team_id"]
             elif away_score > home_score:
                 winner_team_id = match["away_team_id"]
-            updated = db.update("matches", {
-                "home_score": home_score,
-                "away_score": away_score,
-                "winner_team_id": winner_team_id,
-                "status": "FINISHED",
-            }, {"id": f"eq.{match_id}"})
-
+            updated = db.update("matches", {"home_score": home_score, "away_score": away_score, "winner_team_id": winner_team_id, "status": "FINISHED"}, {"id": f"eq.{match_id}"})
             periods = body.get("period_scores", []) or []
             for item in periods:
                 period_number = int(item.get("period"))
@@ -528,7 +495,6 @@ class BasketballHandler(BaseHTTPRequestHandler):
                     db.insert("match_periods", payload)
             return self._send_json({"match": updated, "periods_processed": len(periods)})
 
-
         maintenance_put = re.match(r"^/api/maintenance/(championships|teams|players|matches|match_periods|player_match_stats)/(\d+)$", path)
         if maintenance_put:
             table = maintenance_put.group(1)
@@ -542,7 +508,6 @@ class BasketballHandler(BaseHTTPRequestHandler):
             return self._send_json(db.update(table, payload, {"id": f"eq.{record_id}"}))
 
         return self._send_error("Endpoint no encontrado", 404)
-
 
     def _handle_delete_api(self, path: str) -> None:
         db = self._client()
@@ -559,3 +524,7 @@ def run_server(host: str = "0.0.0.0", port: int = 8000) -> None:
     print(f"Servidor iniciado en http://{host}:{port}")
     print("Usando Supabase. Verifica SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.")
     server.serve_forever()
+
+
+if __name__ == "__main__":
+    run_server(port=int(os.environ.get("PORT", "8000")))

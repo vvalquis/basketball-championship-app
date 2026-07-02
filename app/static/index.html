@@ -1,218 +1,260 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Comunidad de Básquetbol del Rímac</title>
-  <link rel="stylesheet" href="/styles.css?v=20260601-menu-role-switch" />
+ <meta charset="utf-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1" />
+ <title>Comunidad de Básquetbol del Rímac | Resultados, Equipos y Tabla de Posiciones</title>
+ <meta name="description" content="Sitio oficial de la Comunidad de Básquetbol del Rímac. Consulta equipos participantes, calendario de partidos, resultados, tabla de posiciones, estadísticas y ranking de jugadores del campeonato de básquetbol en el Rímac." />
+ <meta name="robots" content="index, follow" />
+ <meta name="author" content="Comunidad de Básquetbol del Rímac" />
+ <meta name="keywords" content="Comunidad de Básquetbol del Rímac, basket Rímac, básquetbol Rímac, campeonato de básquetbol, tabla de posiciones basket, resultados basket Rímac, equipos de básquetbol" />
+ <link rel="canonical" href="https://www.basket-rimac.com/" />
+
+ <meta property="og:locale" content="es_PE" />
+ <meta property="og:type" content="website" />
+ <meta property="og:site_name" content="Comunidad de Básquetbol del Rímac" />
+ <meta property="og:title" content="Comunidad de Básquetbol del Rímac" />
+ <meta property="og:description" content="Resultados, posiciones, equipos, partidos y estadísticas del básquetbol del Rímac." />
+ <meta property="og:url" content="https://www.basket-rimac.com/" />
+ <meta property="og:image" content="https://www.basket-rimac.com/assets/logo-comunidad-rimac.png" />
+
+ <meta name="twitter:card" content="summary_large_image" />
+ <meta name="twitter:title" content="Comunidad de Básquetbol del Rímac" />
+ <meta name="twitter:description" content="Resultados, posiciones, equipos, partidos y estadísticas del básquetbol del Rímac." />
+ <meta name="twitter:image" content="https://www.basket-rimac.com/assets/logo-comunidad-rimac.png" />
+
+ <script type="application/ld+json">
+ {
+   "@context": "https://schema.org",
+   "@type": "SportsOrganization",
+   "name": "Comunidad de Básquetbol del Rímac",
+   "url": "https://www.basket-rimac.com/",
+   "logo": "https://www.basket-rimac.com/assets/logo-comunidad-rimac.png",
+   "sport": "Basketball",
+   "areaServed": "Rímac, Lima, Perú"
+ }
+ </script>
+
+ <link rel="stylesheet" href="/styles.css?v=20260601-menu-role-switch" />
 </head>
 <body>
-  <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
+ <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
 
-  <header class="topbar">
-    <div class="brand-block">
-      <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Abrir menú" aria-controls="mainNav" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <img class="brand-logo-header" src="/assets/logo-comunidad-rimac.png" alt="Logo Comunidad de Básquetbol del Rímac" />
-      <div>
-        <h1><span class="brand-title-full">Comunidad de Básquetbol del Rímac</span><span class="brand-title-mobile">Comunidad Básquet Rímac</span></h1>
-        <p>Resultados, posiciones y estadísticas con estética profesional</p>
-      </div>
-    </div>
-    <div class="topbar-actions">
-      <div class="championship-control" aria-label="Selector de campeonato">
-        <label for="championshipSelect" class="sr-only">Seleccionar torneo</label>
-        <select id="championshipSelect" aria-label="Seleccionar torneo">
-          <option value="">Cargando...</option>
-        </select>
-      </div>
-      <div class="auth-control desktop-auth-only" id="authControl">
-        <button id="loginBtn" class="login-button" type="button">Ingresar</button>
-        <div id="loggedUserBox" class="logged-user-box hidden">
-          <span id="loggedUserName"></span>
-          <button id="logoutBtn" class="logout-button" type="button">Salir</button>
-        </div>
-      </div>
-    </div>
-  </header>
+ <header class="topbar">
+ <div class="brand-block">
+ <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-label="Abrir menú" aria-controls="mainNav" aria-expanded="false">
+ <span></span><span></span><span></span>
+ </button>
+ <img class="brand-logo-header" src="/assets/logo-comunidad-rimac.png" alt="Logo Comunidad de Básquetbol del Rímac" />
+ <div>
+ <h1><span class="brand-title-full">Comunidad de Básquetbol del Rímac</span><span class="brand-title-mobile">Comunidad Básquet Rímac</span></h1>
+ <p>Resultados, posiciones y estadísticas con estética profesional</p>
+ </div>
+ </div>
 
-  <nav id="mainNav" class="main-nav side-menu" aria-label="Menú principal">
-    <div class="mobile-nav-header">
-      <strong>Comunidad de Básquetbol del Rímac</strong>
-      <button id="closeMenuBtn" class="close-menu-btn" type="button" aria-label="Cerrar menú">×</button>
-    </div>
-    <a href="#inicio" class="menu-home-link" data-section-link="inicio">Inicio</a>
-    <a href="#equipos" class="public-only" data-section-link="equipos">Equipos</a>
-    <a href="#partidos" class="public-only" data-section-link="partidos">Partidos</a>
-    <a href="#posiciones" class="public-only" data-section-link="posiciones">Posiciones</a>
-    <a href="#stats" class="public-only" data-section-link="stats">Estadísticas</a>
-    <a href="#jugadores" class="public-only" data-section-link="jugadores">Jugadores</a>
+ <div class="topbar-actions">
+ <div class="championship-control" aria-label="Selector de campeonato">
+ <label for="championshipSelect" class="sr-only">Seleccionar torneo</label>
+ <select id="championshipSelect" aria-label="Seleccionar torneo">
+ <option value="">Cargando...</option>
+ </select>
+ </div>
 
-    <button type="button" class="admin-menu-link maintenance-menu-link auth-only hidden" data-maint-table="championships">Mant. Torneo</button>
-    <button type="button" class="admin-menu-link maintenance-menu-link auth-only hidden" data-maint-table="teams">Mant. Equipos</button>
-    <button type="button" class="admin-menu-link maintenance-menu-link auth-only hidden" data-maint-table="players">Mant. Jugadores</button>
-    <button type="button" class="admin-menu-link maintenance-menu-link auth-only hidden" data-maint-table="matches">Mant. Partidos</button>
-    <button type="button" class="admin-menu-link maintenance-menu-link auth-only hidden" data-maint-table="match_periods">Mant. Tiempos</button>
-    <button type="button" class="admin-menu-link maintenance-menu-link auth-only hidden" data-maint-table="player_match_stats">Mant. Estadísticas</button>
-  </nav>
+ <div class="auth-control desktop-auth-only" id="authControl">
+ <button id="loginBtn" class="login-button" type="button">Ingresar</button>
+ <div id="loggedUserBox" class="logged-user-box hidden">
+ <span id="loggedUserName"></span>
+ <button id="logoutBtn" class="logout-button" type="button">Salir</button>
+ </div>
+ </div>
+ </div>
+ </header>
 
-  <main>
-    <section id="inicio" class="section hero">
-      <div class="section-title-row hero-title-row">
-        <div>
-          <h2>Temporada en vivo</h2>
-          <p>Experiencia visual estilo liga profesional: equipos, jugadores, calendario, resultados, posiciones y rankings en tiempo real.</p>
-        </div>
-      </div>
-      <div class="section-content hero-content">
-        <div id="summaryCards" class="cards"></div>
-      </div>
-    </section>
+ <nav id="mainNav" class="main-nav side-menu" aria-label="Menú principal">
+ <div class="mobile-nav-header">
+ <strong>Comunidad de Básquetbol del Rímac</strong>
+ <button id="closeMenuBtn" class="close-menu-btn" type="button" aria-label="Cerrar menú">×</button>
+ </div>
+ <a href="#inicio" class="menu-home-link" data-section-link="inicio">Inicio</a>
+ <a href="#equipos" class="public-only" data-section-link="equipos">Equipos</a>
+ <a href="#partidos" class="public-only" data-section-link="partidos">Partidos</a>
+ <a href="#posiciones" class="public-only" data-section-link="posiciones">Posiciones</a>
+ <a href="#stats" class="public-only" data-section-link="stats">Estadísticas</a>
+ <a href="#jugadores" class="public-only" data-section-link="jugadores">Jugadores</a>
+ <button type="button" class="admin-menu-link maintenance-menu-link auth-only hidden" data-maint-table="championships">Mant. Torneo</button>
+ <button type="button" class="admin-menu-link maintenance-menu-link auth-only hidden" data-maint-table="teams">Mant. Equipos</button>
+ <button type="button" class="admin-menu-link maintenance-menu-link auth-only hidden" data-maint-table="players">Mant. Jugadores</button>
+ <button type="button" class="admin-menu-link maintenance-menu-link auth-only hidden" data-maint-table="matches">Mant. Partidos</button>
+ <button type="button" class="admin-menu-link maintenance-menu-link auth-only hidden" data-maint-table="match_periods">Mant. Tiempos</button>
+ <button type="button" class="admin-menu-link maintenance-menu-link auth-only hidden" data-maint-table="player_match_stats">Mant. Estadísticas</button>
+ </nav>
 
-    <section id="equipos" class="section section-collapsible">
-      <div class="section-title-row">
-        <h2>Equipos participantes</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
-      </div>
-      <div class="section-content">
-        <div id="teamsContainer" class="cards"></div>
-      </div>
-    </section>
+ <main>
+ <section id="inicio" class="section hero">
+ <div class="section-title-row hero-title-row">
+ <div>
+ <h2>Temporada en vivo</h2>
+ <p>Experiencia visual estilo liga profesional: equipos, jugadores, calendario, resultados, posiciones y rankings en tiempo real.</p>
+ </div>
+ </div>
+ <div class="section-content hero-content">
+ <div class="seo-intro" aria-label="Información de la Comunidad de Básquetbol del Rímac">
+ <h2>Campeonato de básquetbol en el Rímac</h2>
+ <p>
+ Bienvenido al portal de la Comunidad de Básquetbol del Rímac, un espacio creado para consultar información actualizada del campeonato, equipos participantes, programación de partidos, resultados, tabla de posiciones, estadísticas y ranking de jugadores.
+ </p>
+ <p>
+ Aquí podrás seguir la evolución del torneo de básquetbol en el distrito del Rímac, revisar los próximos encuentros, conocer los equipos inscritos y ver el desempeño de los jugadores durante la temporada.
+ </p>
+ <ul>
+ <li>Calendario de partidos programados y finalizados.</li>
+ <li>Tabla de posiciones del campeonato.</li>
+ <li>Ranking de jugadores por puntos, rebotes, asistencias, robos y bloqueos.</li>
+ <li>Información de equipos y planteles participantes.</li>
+ </ul>
+ </div>
+ <div id="summaryCards" class="cards"></div>
+ </div>
+ </section>
 
-    <section id="partidos" class="section section-collapsible">
-      <div class="section-title-row">
-        <h2>Calendario y resultados</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
-      </div>
-      <div class="section-content">
-        <div class="matches-tabs" role="tablist" aria-label="Filtrar calendario y resultados">
-          <button id="scheduledTab" class="matches-tab active" type="button" data-match-tab="scheduled" role="tab" aria-selected="true">Programados</button>
-          <button id="finishedTab" class="matches-tab" type="button" data-match-tab="finished" role="tab" aria-selected="false">Finalizados</button>
-        </div>
-        <div id="matchesContainer" class="match-list"></div>
-      </div>
-    </section>
+ <section id="equipos" class="section section-collapsible">
+ <div class="section-title-row">
+ <h2>Equipos participantes</h2>
+ <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+ </div>
+ <div class="section-content">
+ <div id="teamsContainer" class="cards"></div>
+ </div>
+ </section>
 
-    <section id="posiciones" class="section section-collapsible">
-      <div class="section-title-row">
-        <h2>Tabla de posiciones</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
-      </div>
-      <div class="section-content">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Equipo</th><th>PTS</th><th>PJ</th><th>PG</th><th>PP</th><th>PF</th><th>PC</th><th>DIF</th></tr>
-            </thead>
-            <tbody id="standingsTable"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+ <section id="partidos" class="section section-collapsible">
+ <div class="section-title-row">
+ <h2>Calendario y resultados</h2>
+ <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+ </div>
+ <div class="section-content">
+ <div class="matches-tabs" role="tablist" aria-label="Filtrar calendario y resultados">
+ <button id="scheduledTab" class="matches-tab active" type="button" data-match-tab="scheduled" role="tab" aria-selected="true">Programados</button>
+ <button id="finishedTab" class="matches-tab" type="button" data-match-tab="finished" role="tab" aria-selected="false">Finalizados</button>
+ </div>
+ <div id="matchesContainer" class="match-list"></div>
+ </div>
+ </section>
 
-    <section id="stats" class="section section-collapsible">
-      <div class="section-title-row">
-        <h2>Ranking de jugadores</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
-      </div>
-      <div class="section-content">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>FALTAS</th><th>PTS (3)</th><th>REB</th><th>AST</th><th>ROB</th><th>BLK</th></tr>
-            </thead>
-            <tbody id="statsTable"></tbody>
-          </table>
-        </div>
-        <div id="statsPagination" class="pagination-controls" aria-label="Paginación ranking de jugadores"></div>
-      </div>
-    </section>
-    <section id="jugadores" class="section section-collapsible">
-      <div class="section-title-row">
-        <h2>Jugadores</h2>
-        <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
-      </div>
-      <div class="section-content">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>#</th><th>Jugador</th><th>Equipo</th><th>Posición</th></tr>
-            </thead>
-            <tbody id="playersTable"></tbody>
-          </table>
-        </div>
-        <div id="playersPagination" class="pagination-controls" aria-label="Paginación jugadores"></div>
-      </div>
-    </section>
-  </main>
+ <section id="posiciones" class="section section-collapsible">
+ <div class="section-title-row">
+ <h2>Tabla de posiciones</h2>
+ <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+ </div>
+ <div class="section-content">
+ <div class="table-wrap">
+ <table>
+ <thead>
+ <tr><th>Equipo</th><th>PTS</th><th>PJ</th><th>PG</th><th>PP</th><th>PF</th><th>PC</th><th>DIF</th></tr>
+ </thead>
+ <tbody id="standingsTable"></tbody>
+ </table>
+ </div>
+ </div>
+ </section>
 
-  <div id="matchDetailModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="matchDetailTitle">
-    <div class="modal-backdrop" data-close-match-detail></div>
-    <div class="modal-panel">
-      <button class="modal-close" type="button" aria-label="Cerrar detalle" data-close-match-detail>×</button>
-      <div id="matchDetailContent"></div>
-    </div>
-  </div>
+ <section id="stats" class="section section-collapsible">
+ <div class="section-title-row">
+ <h2>Ranking de jugadores</h2>
+ <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+ </div>
+ <div class="section-content">
+ <div class="table-wrap">
+ <table>
+ <thead>
+ <tr><th>Jugador</th><th>Equipo</th><th>PTS</th><th>FALTAS</th><th>PTS (3)</th><th>REB</th><th>AST</th><th>ROB</th><th>BLK</th></tr>
+ </thead>
+ <tbody id="statsTable"></tbody>
+ </table>
+ </div>
+ <div id="statsPagination" class="pagination-controls" aria-label="Paginación ranking de jugadores"></div>
+ </div>
+ </section>
 
-  <div id="loginModal" class="modal login-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-    <div class="modal-backdrop" data-close-login></div>
-    <div class="modal-panel login-panel">
-      <button class="modal-close" type="button" aria-label="Cerrar login" data-close-login>×</button>
-      <div class="modal-header-block">
-        <span class="badge">Acceso administrativo</span>
-        <h2 id="loginTitle">Iniciar sesión</h2>
-        <p>Ingresa con el usuario registrado en la tabla users.</p>
-      </div>
-      <form id="loginForm" class="login-form">
-        <label>
-          Nombre
-          <input id="loginName" name="name" type="text" autocomplete="username" required placeholder="Nombre de usuario" />
-        </label>
-        <label>
-          Contraseña
-          <input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Contraseña" />
-        </label>
-        <button class="primary-button" type="submit">Ingresar</button>
-        <div id="loginError" class="login-error" role="alert"></div>
-      </form>
-    </div>
-  </div>
+ <section id="jugadores" class="section section-collapsible">
+ <div class="section-title-row">
+ <h2>Jugadores</h2>
+ <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
+ </div>
+ <div class="section-content">
+ <div class="table-wrap">
+ <table>
+ <thead>
+ <tr><th>#</th><th>Jugador</th><th>Equipo</th><th>Posición</th></tr>
+ </thead>
+ <tbody id="playersTable"></tbody>
+ </table>
+ </div>
+ <div id="playersPagination" class="pagination-controls" aria-label="Paginación jugadores"></div>
+ </div>
+ </section>
+ </main>
 
+ <div id="matchDetailModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="matchDetailTitle">
+ <div class="modal-backdrop" data-close-match-detail></div>
+ <div class="modal-panel">
+ <button class="modal-close" type="button" aria-label="Cerrar detalle" data-close-match-detail>×</button>
+ <div id="matchDetailContent"></div>
+ </div>
+ </div>
 
-  <div id="maintenanceModal" class="modal maintenance-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="maintenanceTitle">
-    <div class="modal-backdrop" data-close-maintenance></div>
-    <div class="modal-panel maintenance-panel">
-      <button class="modal-close" type="button" aria-label="Cerrar mantenimiento" data-close-maintenance>×</button>
-      <div class="modal-header-block maintenance-header-block">
-        <span class="badge">Mantenimiento</span>
-        <h2 id="maintenanceTitle">Mantenimiento</h2>
-        <p id="maintenanceSubtitle">Inserta, modifica o elimina registros.</p>
-      </div>
+ <div id="loginModal" class="modal login-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+ <div class="modal-backdrop" data-close-login></div>
+ <div class="modal-panel login-panel">
+ <button class="modal-close" type="button" aria-label="Cerrar login" data-close-login>×</button>
+ <div class="modal-header-block">
+ <span class="badge">Acceso administrativo</span>
+ <h2 id="loginTitle">Iniciar sesión</h2>
+ <p>Ingresa con el usuario registrado en la tabla users.</p>
+ </div>
+ <form id="loginForm" class="login-form">
+ <label>
+ Nombre
+ <input id="loginName" name="name" type="text" autocomplete="username" required placeholder="Nombre de usuario" />
+ </label>
+ <label>
+ Contraseña
+ <input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Contraseña" />
+ </label>
+ <button class="primary-button" type="submit">Ingresar</button>
+ <div id="loginError" class="login-error" role="alert"></div>
+ </form>
+ </div>
+ </div>
 
-      <div id="maintenanceError" class="login-error" role="alert"></div>
+ <div id="maintenanceModal" class="modal maintenance-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="maintenanceTitle">
+ <div class="modal-backdrop" data-close-maintenance></div>
+ <div class="modal-panel maintenance-panel">
+ <button class="modal-close" type="button" aria-label="Cerrar mantenimiento" data-close-maintenance>×</button>
+ <div class="modal-header-block maintenance-header-block">
+ <span class="badge">Mantenimiento</span>
+ <h2 id="maintenanceTitle">Mantenimiento</h2>
+ <p id="maintenanceSubtitle">Inserta, modifica o elimina registros.</p>
+ </div>
+ <div id="maintenanceError" class="login-error" role="alert"></div>
+ <form id="maintenanceForm" class="maintenance-form"></form>
+ <div class="maintenance-toolbar">
+ <button id="maintenanceNewBtn" class="secondary-button" type="button">Nuevo</button>
+ <button id="maintenanceRefreshBtn" class="secondary-button" type="button">Actualizar</button>
+ </div>
+ <div class="table-wrap maintenance-table-wrap">
+ <table>
+ <thead id="maintenanceTableHead"></thead>
+ <tbody id="maintenanceTableBody"></tbody>
+ </table>
+ </div>
+ </div>
+ </div>
 
-      <form id="maintenanceForm" class="maintenance-form"></form>
+ <footer>
+ <p>Comunidad de Básquetbol del Rímac</p>
+ </footer>
 
-      <div class="maintenance-toolbar">
-        <button id="maintenanceNewBtn" class="secondary-button" type="button">Nuevo</button>
-        <button id="maintenanceRefreshBtn" class="secondary-button" type="button">Actualizar</button>
-      </div>
-
-      <div class="table-wrap maintenance-table-wrap">
-        <table>
-          <thead id="maintenanceTableHead"></thead>
-          <tbody id="maintenanceTableBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-
-  <footer>
-    <p>Comunidad de Básquetbol del Rímac</p>
-  </footer>
-
-  <script src="/app.js?v=20260601-menu-role-switch"></script>
+ <script src="/app.js?v=20260601-menu-role-switch"></script>
 </body>
 </html>
