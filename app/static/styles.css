@@ -2373,3 +2373,38 @@ body:not(.is-authenticated) .main-nav .admin-menu-link {
 #maintenanceMenuGroup {
   display: none !important;
 }
+
+/* =========================================================
+   Branding cabecera - Comunidad de Básquetbol del Rímac
+   ========================================================= */
+.brand-logo-header {
+  width: 58px;
+  height: 58px;
+  min-width: 58px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: rgba(0, 0, 0, .35);
+  border: 1px solid rgba(255, 176, 0, .38);
+  box-shadow: 0 10px 26px rgba(255, 122, 0, .18);
+}
+
+.topbar h1 {
+  font-size: clamp(1rem, 1.7vw, 1.42rem);
+  line-height: 1.08;
+}
+
+@media (max-width: 600px) {
+  .brand-logo-header {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+  }
+
+  .brand-block {
+    gap: .65rem !important;
+  }
+
+  .topbar h1 {
+    font-size: .95rem !important;
+  }
+}
