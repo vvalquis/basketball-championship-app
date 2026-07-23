@@ -568,6 +568,113 @@ async function loadMatches() {
   } catch (error) { showError('matchesContainer', error); }
 }
 
+
+function normalizeMatchPhase(match) {
+  return String(match?.phase || 'REGULAR').trim().toUpperCase();
+}
+
+function playoffTeamBlock(team, seed, placeholder = 'Por definir') {
+  const name = escapeHtml(team?.name || placeholder);
+  const logo = team?.logo_url ? escapeHtml(team.logo_url) : '';
+  const seedLabel = seed ? `<span class="playoff-seed">${escapeHtml(String(seed))}</span>` : '';
+  return `
+    <div class="playoff-team">
+      <div class="playoff-team-identity">
+        ${seedLabel}
+        <div class="playoff-team-logo">${logo ? `<img src="${logo}" alt="Logo ${name}" loading="lazy" />` : '<span>🏀</span>'}</div>
+        <strong>${name}</strong>
+      </div>
+    </div>
+  `;
+}
+
+function playoffMatchCard(match, label, seeds = []) {
+  const status = match ? matchStatusLabel(match.status) : 'Por programar';
+  const date = match?.match_date ? `${escapeHtml(match.match_date)} ${escapeHtml(match.match_time || '')}`.trim() : 'Fecha por definir';
+  const venue = match?.venue ? escapeHtml(match.venue) : 'Ubicación por definir';
+  const homeScore = match && isFinishedMatch(match) ? Number(match.home_score || 0) : null;
+  const awayScore = match && isFinishedMatch(match) ? Number(match.away_score || 0) : null;
+  return `
+    <article class="playoff-match-card">
+      <div class="playoff-match-header">
+        <span class="playoff-match-label">${escapeHtml(label)}</span>
+        <span class="match-status-pill">${escapeHtml(status)}</span>
+      </div>
+      <div class="playoff-team-row">
+        ${playoffTeamBlock(match?.home_team, seeds[0])}
+        <span class="playoff-score">${homeScore === null ? '-' : homeScore}</span>
+      </div>
+      <div class="playoff-team-row">
+        ${playoffTeamBlock(match?.away_team, seeds[1])}
+        <span class="playoff-score">${awayScore === null ? '-' : awayScore}</span>
+      </div>
+      <div class="playoff-match-meta"><span>🗓 ${date}</span><span>📍 ${venue}</span></div>
+      ${match?.id ? `<button class="detail-link-button" type="button" onclick="openMatchDetail(${Number(match.id)})">Ver detalle</button>` : ''}
+    </article>
+  `;
+}
+
+function projectedPlayoffMatch(home, away, label, seeds = []) {
+  return playoffMatchCard({ home_team: home, away_team: away, status: 'SCHEDULED' }, label, seeds);
+}
+
+function semifinalWinner(match) {
+  if (!match || !isFinishedMatch(match)) return null;
+  if (match.winner_team_id) {
+    return Number(match.winner_team_id) === Number(match.home_team_id) ? match.home_team : match.away_team;
+  }
+  const home = Number(match.home_score || 0);
+  const away = Number(match.away_score || 0);
+  if (home === away) return null;
+  return home > away ? match.home_team : match.away_team;
+}
+
+async function loadPlayoffs() {
+  const semifinalContainer = document.getElementById('semifinalContainer');
+  const finalContainer = document.getElementById('finalContainer');
+  const note = document.getElementById('playoffsNote');
+  if (!semifinalContainer || !finalContainer) return;
+
+  try {
+    const [matches, standings, teams] = await Promise.all([
+      api(`/api/matches?championship_id=${getChampionshipId()}`),
+      api(`/api/standings?championship_id=${getChampionshipId()}`),
+      api(`/api/teams?championship_id=${getChampionshipId()}`)
+    ]);
+    const teamsByName = new Map((teams || []).map(team => [String(team.name || '').trim().toLowerCase(), team]));
+    const qualified = (standings || []).slice(0, 4).map(row => teamsByName.get(String(row.team_name || '').trim().toLowerCase()) || { id: row.team_id, name: row.team_name, logo_url: row.logo_url });
+    const semifinals = sortMatchesByDateDescTimeAsc((matches || []).filter(match => normalizeMatchPhase(match) === 'SEMIFINAL')).reverse();
+    const finals = sortMatchesByDateDescTimeAsc((matches || []).filter(match => normalizeMatchPhase(match) === 'FINAL')).reverse();
+
+    if (semifinals.length) {
+      semifinalContainer.innerHTML = semifinals.slice(0, 2).map((match, index) => playoffMatchCard(match, `Semifinal ${index + 1}`)).join('');
+      if (note) note.textContent = 'Las llaves se muestran con los partidos registrados como SEMIFINAL y FINAL.';
+    } else if (qualified.length >= 4) {
+      semifinalContainer.innerHTML = [
+        projectedPlayoffMatch(qualified[0], qualified[3], 'Semifinal 1', ['1.º', '4.º']),
+        projectedPlayoffMatch(qualified[1], qualified[2], 'Semifinal 2', ['2.º', '3.º'])
+      ].join('');
+      if (note) note.textContent = 'Clasificación provisional: 1.º vs 4.º y 2.º vs 3.º según la tabla de posiciones.';
+    } else {
+      semifinalContainer.innerHTML = '<p class="playoff-empty">Aún no hay cuatro equipos clasificados ni partidos de semifinal registrados.</p>';
+    }
+
+    if (finals.length) {
+      finalContainer.innerHTML = finals.slice(0, 1).map(match => playoffMatchCard(match, 'Gran Final')).join('');
+    } else {
+      const winners = semifinals.slice(0, 2).map(semifinalWinner);
+      if (winners.length === 2 && winners.every(Boolean)) {
+        finalContainer.innerHTML = projectedPlayoffMatch(winners[0], winners[1], 'Gran Final');
+      } else {
+        finalContainer.innerHTML = projectedPlayoffMatch(null, null, 'Gran Final');
+      }
+    }
+  } catch (error) {
+    showError('semifinalContainer', error);
+    finalContainer.innerHTML = '<p class="playoff-empty">No fue posible cargar la final.</p>';
+  }
+}
+
 async function loadStandings() {
   try {
     const standings = await api(`/api/standings?championship_id=${getChampionshipId()}`);
@@ -846,7 +953,7 @@ async function loadMaintenanceData() {
 }
 
 async function loadAll() {
-  await Promise.all([loadSummary(), loadTeams(), loadPlayers(), loadMatches(), loadStandings(), loadStats()]);
+  await Promise.all([loadSummary(), loadTeams(), loadPlayers(), loadMatches(), loadPlayoffs(), loadStandings(), loadStats()]);
   if (isLoggedIn()) await loadMaintenanceData();
 }
 
@@ -934,11 +1041,12 @@ const MAINTENANCE_TABLES = {
     title: 'Mant. Partidos',
     subtitle: 'Mantenimiento de la tabla matches.',
     endpoint: 'matches',
-    columns: ['id', 'home_team_name', 'away_team_name', 'match_date', 'match_time', 'venue', 'status', 'score'],
+    columns: ['id', 'home_team_name', 'away_team_name', 'phase', 'match_date', 'match_time', 'venue', 'status', 'score'],
     fields: [
       { name: 'championship_id', label: 'Torneo', type: 'championship', required: true },
       { name: 'home_team_id', label: 'Equipo local', type: 'team', required: true },
       { name: 'away_team_id', label: 'Equipo visitante', type: 'team', required: true },
+      { name: 'phase', label: 'Fase', type: 'select', options: ['REGULAR', 'SEMIFINAL', 'FINAL'], required: true },
       { name: 'match_date', label: 'Fecha', type: 'date', required: true },
       { name: 'match_time', label: 'Hora', type: 'time' },
       { name: 'venue', label: 'Ubicación', type: 'text' },
@@ -992,7 +1100,7 @@ let maintenanceState = {
 
 function maintenanceLabel(column) {
   const labels = {
-    id: 'ID', name: 'Nombre', season: 'Temporada', category: 'Categoría', start_date: 'Inicio', end_date: 'Fin', status: 'Estado',
+    id: 'ID', name: 'Nombre', season: 'Temporada', category: 'Categoría', start_date: 'Inicio', end_date: 'Fin', status: 'Estado', phase: 'Fase',
     coach_name: 'Delegado', logo_url: 'Logo', jersey_number: '#', first_name: 'Nombres', last_name: 'Apellidos', team_name: 'Equipo', position: 'Posición',
     home_team_name: 'Local', away_team_name: 'Visitante', match_date: 'Fecha', match_time: 'Hora', venue: 'Ubicación', score: 'Marcador',
     match_id: 'Partido', period_number: 'Tiempo', home_score: 'Local', away_score: 'Visitante', player_name: 'Jugador', points: 'PTS', fouls: 'Faltas', points_triple: 'PTS (3)', rebounds: 'REB', assists: 'AST'

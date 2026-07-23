@@ -2408,3 +2408,56 @@ body:not(.is-authenticated) .main-nav .admin-menu-link {
     font-size: .95rem !important;
   }
 }
+
+
+/* ===== Semifinal y Final ===== */
+.playoffs-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) auto minmax(0, 1fr);
+  gap: 22px;
+  align-items: center;
+}
+.playoff-stage {
+  border: 1px solid rgba(255, 122, 0, .24);
+  border-radius: 18px;
+  padding: 20px;
+  background: linear-gradient(145deg, rgba(255, 120, 0, .08), rgba(20, 20, 24, .65));
+}
+.playoff-stage-final { border-color: rgba(255, 182, 48, .42); }
+.playoff-stage-heading { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+.playoff-stage-heading h3 { margin: 0 0 3px; }
+.playoff-stage-heading p { margin: 0; opacity: .75; font-size: .9rem; }
+.playoff-stage-number {
+  width: 34px; height: 34px; display: inline-grid; place-items: center;
+  border-radius: 50%; background: #f36a00; color: #fff; font-weight: 800; flex: 0 0 auto;
+}
+.playoff-match-list { display: grid; gap: 14px; }
+.playoff-match-card {
+  border: 1px solid rgba(255,255,255,.11); border-radius: 15px; padding: 15px;
+  background: rgba(7, 7, 9, .66);
+}
+.playoff-match-header, .playoff-team-row, .playoff-team-identity, .playoff-match-meta {
+  display: flex; align-items: center;
+}
+.playoff-match-header { justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.playoff-match-label { font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: #ff9c35; }
+.playoff-team-row { justify-content: space-between; gap: 10px; padding: 9px 0; border-top: 1px solid rgba(255,255,255,.08); }
+.playoff-team { min-width: 0; }
+.playoff-team-identity { gap: 9px; min-width: 0; }
+.playoff-team-identity strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.playoff-team-logo { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: #fff; flex: 0 0 auto; }
+.playoff-team-logo img { width: 100%; height: 100%; object-fit: contain; }
+.playoff-seed { min-width: 30px; font-size: .78rem; opacity: .72; }
+.playoff-score { font-size: 1.35rem; font-weight: 900; }
+.playoff-match-meta { justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; font-size: .82rem; opacity: .72; padding-top: 9px; }
+.playoff-match-card .detail-link-button { margin-top: 10px; }
+.playoff-connector { font-size: 2.1rem; color: #f36a00; }
+.playoffs-note, .playoff-empty { margin: 14px 0 0; opacity: .72; }
+@media (max-width: 900px) {
+  .playoffs-layout { grid-template-columns: 1fr; }
+  .playoff-connector { transform: rotate(90deg); text-align: center; line-height: 1; }
+}
+@media (max-width: 560px) {
+  .playoff-stage { padding: 14px; }
+  .playoff-match-meta { display: grid; }
+}
