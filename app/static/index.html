@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Comunidad de Básquetbol del Rímac</title>
-  <link rel="stylesheet" href="/styles.css?v=20260723-playoffs-winner" />
+  <link rel="stylesheet" href="/styles.css?v=20260723-championship-winner-summary" />
 </head>
 <body>
   <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
@@ -17,7 +17,7 @@
       <img class="brand-logo-header" src="/assets/logo-comunidad-rimac.png" alt="Logo Comunidad de Básquetbol del Rímac" />
       <div>
         <h1><span class="brand-title-full">Comunidad de Básquetbol del Rímac</span><span class="brand-title-mobile">Comunidad Básquet Rímac</span></h1>
-        <p>Resultados, posiciones y estadísticas con estética profesional</p>
+        <p>Resultados, posiciones y estadísticas</p>
       </div>
     </div>
     <div class="topbar-actions">
@@ -62,8 +62,7 @@
     <section id="inicio" class="section hero">
       <div class="section-title-row hero-title-row">
         <div>
-          <h2>Temporada en vivo</h2>
-          <p>Experiencia visual estilo liga profesional: equipos, jugadores, calendario, resultados, posiciones y rankings en tiempo real.</p>
+          <h2 id="selectedChampionshipTitle">Campeonato</h2>
         </div>
       </div>
       <div class="section-content hero-content">
@@ -100,7 +99,6 @@
       <div class="section-title-row">
         <div>
           <h2>Semifinal y Final</h2>
-          <p>Llaves decisivas del campeonato según la clasificación y los resultados registrados.</p>
         </div>
         <button class="section-toggle" type="button" aria-expanded="true" aria-label="Contraer sección" title="Contraer sección"><span class="toggle-icon">⌃</span></button>
       </div>
@@ -140,7 +138,6 @@
             <div id="winnerContainer" class="playoff-winner-container" aria-live="polite"></div>
           </div>
         </div>
-        <p id="playoffsNote" class="playoffs-note"></p>
       </div>
     </section>
 

@@ -402,11 +402,19 @@ async function loadChampionships() {
 
 async function loadSummary() {
   try {
-    const summary = await api(`/api/summary?championship_id=${getChampionshipId()}`);
-    const heroText = document.querySelector('#inicio .hero-title-row p');
-    if (heroText) {
-      heroText.textContent = `Campeonato seleccionado: ${selectedChampionshipLabel()}. Información actualizada según equipos, jugadores, partidos, posiciones y rankings registrados.`;
-    }
+    const [summary, matches] = await Promise.all([
+      api(`/api/summary?championship_id=${getChampionshipId()}`),
+      api(`/api/matches?championship_id=${getChampionshipId()}`),
+    ]);
+
+    const championshipTitle = document.getElementById('selectedChampionshipTitle');
+    if (championshipTitle) championshipTitle.textContent = selectedChampionshipLabel();
+
+    const finalMatch = sortMatchesByDateDescTimeAsc(
+      (matches || []).filter(match => normalizeMatchPhase(match) === 'FINAL' && match?.home_team_id && match?.away_team_id)
+    ).reverse()[0] || null;
+    const champion = playoffMatchWinner(finalMatch);
+
     document.getElementById('summaryCards').innerHTML = `
       <div class="card"><h3>Equipos</h3><div class="metric">${summary.teams}</div><p>Franquicias participantes</p></div>
       <div class="card"><h3>Jugadores</h3><div class="metric">${summary.players}</div><p>Planteles registrados</p></div>
@@ -416,6 +424,13 @@ async function loadSummary() {
         <div class="leader-team-block">
           ${summary.leader ? teamLogo({ name: summary.leader.team_name, logo_url: summary.leader.logo_url }) : '<div class="team-logo">🏀</div>'}
           <p class="leader-team-name">${escapeHtml(summary.leader?.team_name || 'Sin líder')}</p>
+        </div>
+      </div>
+      <div class="card leader-card champion-summary-card">
+        <h3>Campeón</h3>
+        <div class="leader-team-block">
+          ${champion ? teamLogo(champion) : '<div class="team-logo">🏆</div>'}
+          <p class="leader-team-name">${escapeHtml(champion?.name || 'Por definir')}</p>
         </div>
       </div>
     `;
@@ -661,7 +676,6 @@ async function loadPlayoffs() {
   const finalContainer = document.getElementById('finalContainer');
   const thirdPlaceContainer = document.getElementById('thirdPlaceContainer');
   const winnerContainer = document.getElementById('winnerContainer');
-  const note = document.getElementById('playoffsNote');
   if (!section || !semifinalContainer || !finalContainer || !thirdPlaceContainer || !winnerContainer) return;
 
   const setPlayoffsVisibility = (visible) => {
@@ -684,7 +698,6 @@ async function loadPlayoffs() {
       finalContainer.innerHTML = '';
       thirdPlaceContainer.innerHTML = '';
       winnerContainer.innerHTML = '';
-      if (note) note.textContent = '';
       return;
     }
 
@@ -705,7 +718,6 @@ async function loadPlayoffs() {
     const finalMatch = finals[0] || null;
     winnerContainer.innerHTML = playoffWinnerCard(playoffMatchWinner(finalMatch));
 
-    if (note) note.textContent = 'Orden de visualización: semifinal, partido por el 3.er y 4.º lugar, final y ganador del campeonato.';
   } catch (error) {
     setPlayoffsVisibility(false);
     console.error('No fue posible cargar las fases finales:', error);

@@ -2515,3 +2515,17 @@ body:not(.is-authenticated) .main-nav .admin-menu-link {
 }
 
 }
+
+/* Resumen del campeonato: cinco indicadores, incluido el campeón */
+#summaryCards { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.champion-summary-card .team-logo { border-color: rgba(255, 208, 90, .65); }
+
+@media (max-width: 1180px) {
+  #summaryCards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 940px) {
+  #summaryCards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  #summaryCards { grid-template-columns: 1fr; }
+}
