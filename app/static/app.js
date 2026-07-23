@@ -1111,8 +1111,8 @@ const MAINTENANCE_TABLES = {
     columns: ['id', 'match_id', 'player_name', 'team_name', 'points', 'fouls', 'points_triple', 'rebounds', 'assists'],
     fields: [
       { name: 'match_id', label: 'Partido', type: 'match', required: true },
-      { name: 'player_id', label: 'Jugador', type: 'player', required: true },
       { name: 'team_id', label: 'Equipo', type: 'team', required: true },
+      { name: 'player_id', label: 'Jugador', type: 'player', required: true },
       { name: 'points', label: 'PTS', type: 'number' },
       { name: 'fouls', label: 'Faltas', type: 'number' },
       { name: 'points_triple', label: 'PTS (3)', type: 'number' },
@@ -1167,15 +1167,37 @@ async function loadMaintenanceLookups() {
   maintenanceState.matches = matches;
 }
 
-function maintenanceOptionList(type, currentValue) {
+function maintenanceMatchById(matchId) {
+  return maintenanceState.matches.find(match => Number(match.id) === Number(matchId));
+}
+
+function maintenanceTeamsForMatch(matchId) {
+  const match = maintenanceMatchById(matchId);
+  if (!match) return [];
+  const allowedIds = new Set([Number(match.home_team_id), Number(match.away_team_id)]);
+  return maintenanceState.teams.filter(team => allowedIds.has(Number(team.id)));
+}
+
+function maintenancePlayersForTeam(teamId) {
+  if (!teamId) return [];
+  return maintenanceState.players.filter(player => Number(player.team_id) === Number(teamId));
+}
+
+function maintenanceOptionList(type, currentValue, context = {}) {
   if (type === 'championship') {
     return availableChampionships.map(champ => `<option value="${champ.id}" ${Number(currentValue || getChampionshipId()) === Number(champ.id) ? 'selected' : ''}>${escapeHtml(champ.name)}${champ.season ? ' · ' + escapeHtml(champ.season) : ''}</option>`).join('');
   }
   if (type === 'team') {
-    return maintenanceState.teams.map(team => `<option value="${team.id}" ${Number(currentValue) === Number(team.id) ? 'selected' : ''}>${escapeHtml(team.name)}</option>`).join('');
+    const teams = maintenanceState.table === 'player_match_stats'
+      ? maintenanceTeamsForMatch(context.matchId)
+      : maintenanceState.teams;
+    return teams.map(team => `<option value="${team.id}" ${Number(currentValue) === Number(team.id) ? 'selected' : ''}>${escapeHtml(team.name)}</option>`).join('');
   }
   if (type === 'player') {
-    return maintenanceState.players.map(player => `<option value="${player.id}" ${Number(currentValue) === Number(player.id) ? 'selected' : ''}>#${escapeHtml(player.jersey_number || '-')} ${escapeHtml(player.first_name || '')} ${escapeHtml(player.last_name || '')}</option>`).join('');
+    const players = maintenanceState.table === 'player_match_stats'
+      ? maintenancePlayersForTeam(context.teamId)
+      : maintenanceState.players;
+    return players.map(player => `<option value="${player.id}" ${Number(currentValue) === Number(player.id) ? 'selected' : ''}>#${escapeHtml(player.jersey_number || '-')} ${escapeHtml(player.first_name || '')} ${escapeHtml(player.last_name || '')}</option>`).join('');
   }
   if (type === 'match') {
     return maintenanceState.matches.map(match => `<option value="${match.id}" ${Number(currentValue) === Number(match.id) ? 'selected' : ''}>${escapeHtml(match.match_date || '')} ${escapeHtml(match.match_time || '')} · ${escapeHtml(match.home_team?.name || 'Local')} vs ${escapeHtml(match.away_team?.name || 'Visitante')}</option>`).join('');
@@ -1183,21 +1205,67 @@ function maintenanceOptionList(type, currentValue) {
   return '';
 }
 
+function updateStatisticsTeamOptions(matchId, selectedTeamId = '') {
+  const teamSelect = document.querySelector('#maintenanceForm select[name="team_id"]');
+  if (!teamSelect) return;
+  const teams = maintenanceTeamsForMatch(matchId);
+  const validSelected = teams.some(team => Number(team.id) === Number(selectedTeamId)) ? selectedTeamId : '';
+  teamSelect.innerHTML = `<option value="">Seleccione...</option>${teams.map(team => `<option value="${team.id}" ${Number(validSelected) === Number(team.id) ? 'selected' : ''}>${escapeHtml(team.name)}</option>`).join('')}`;
+  teamSelect.disabled = !matchId;
+}
+
+function updateStatisticsPlayerOptions(teamId, selectedPlayerId = '') {
+  const playerSelect = document.querySelector('#maintenanceForm select[name="player_id"]');
+  if (!playerSelect) return;
+  const players = maintenancePlayersForTeam(teamId);
+  const validSelected = players.some(player => Number(player.id) === Number(selectedPlayerId)) ? selectedPlayerId : '';
+  playerSelect.innerHTML = `<option value="">Seleccione...</option>${players.map(player => `<option value="${player.id}" ${Number(validSelected) === Number(player.id) ? 'selected' : ''}>#${escapeHtml(player.jersey_number || '-')} ${escapeHtml(player.first_name || '')} ${escapeHtml(player.last_name || '')}</option>`).join('')}`;
+  playerSelect.disabled = !teamId;
+}
+
+function bindStatisticsDependentSelectors(record = {}) {
+  if (maintenanceState.table !== 'player_match_stats') return;
+  const matchSelect = document.querySelector('#maintenanceForm select[name="match_id"]');
+  const teamSelect = document.querySelector('#maintenanceForm select[name="team_id"]');
+  if (!matchSelect || !teamSelect) return;
+
+  updateStatisticsTeamOptions(matchSelect.value, record.team_id || '');
+  updateStatisticsPlayerOptions(teamSelect.value, record.player_id || '');
+
+  matchSelect.addEventListener('change', () => {
+    updateStatisticsTeamOptions(matchSelect.value, '');
+    updateStatisticsPlayerOptions('', '');
+  });
+
+  teamSelect.addEventListener('change', () => {
+    updateStatisticsPlayerOptions(teamSelect.value, '');
+  });
+}
+
 function renderMaintenanceForm(record = {}) {
   const config = MAINTENANCE_TABLES[maintenanceState.table];
   const form = document.getElementById('maintenanceForm');
   if (!form || !config) return;
 
+  const context = {
+    matchId: record.match_id || '',
+    teamId: record.team_id || '',
+  };
+
   const fields = config.fields.map(field => {
     let value = record[field.name];
     if (field.name === 'championship_id' && !value) value = getChampionshipId();
     const required = field.required ? 'required' : '';
+    const disabled = maintenanceState.table === 'player_match_stats'
+      && ((field.name === 'team_id' && !context.matchId) || (field.name === 'player_id' && !context.teamId))
+      ? 'disabled'
+      : '';
 
     if (['select', 'championship', 'team', 'player', 'match'].includes(field.type)) {
       const options = field.type === 'select'
         ? (field.options || []).map(opt => `<option value="${escapeHtml(opt)}" ${String(value || '') === String(opt) ? 'selected' : ''}>${escapeHtml(opt)}</option>`).join('')
-        : maintenanceOptionList(field.type, value);
-      return `<label>${escapeHtml(field.label)}<select name="${escapeHtml(field.name)}" ${required}><option value="">Seleccione...</option>${options}</select></label>`;
+        : maintenanceOptionList(field.type, value, context);
+      return `<label>${escapeHtml(field.label)}<select name="${escapeHtml(field.name)}" ${required} ${disabled}><option value="">Seleccione...</option>${options}</select></label>`;
     }
 
     return `<label>${escapeHtml(field.label)}<input name="${escapeHtml(field.name)}" type="${escapeHtml(field.type || 'text')}" value="${escapeHtml(value ?? '')}" ${required} /></label>`;
@@ -1210,6 +1278,8 @@ function renderMaintenanceForm(record = {}) {
       <button class="secondary-button" type="button" onclick="clearMaintenanceForm()">Limpiar</button>
     </div>
   `;
+
+  bindStatisticsDependentSelectors(record);
 }
 
 function renderMaintenanceTable() {
