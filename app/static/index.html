@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Comunidad de Básquetbol del Rímac</title>
-  <link rel="stylesheet" href="/styles.css?v=20260723-playoffs" />
+  <link rel="stylesheet" href="/styles.css?v=20260723-playoffs-winner" />
 </head>
 <body>
   <div id="menuOverlay" class="menu-overlay" aria-hidden="true"></div>
@@ -106,27 +106,38 @@
       </div>
       <div class="section-content">
         <div class="playoffs-layout">
-          <div class="playoff-stage">
+          <div class="playoff-stage playoff-stage-semifinal">
             <div class="playoff-stage-heading">
               <span class="playoff-stage-number">1</span>
               <div><h3>Semifinal</h3><p>Los cuatro equipos clasificados disputan dos llaves.</p></div>
             </div>
             <div id="semifinalContainer" class="playoff-match-list" aria-live="polite"></div>
           </div>
-          <div class="playoff-connector" aria-hidden="true"><span>→</span></div>
-          <div class="playoff-stage playoff-stage-final">
-            <div class="playoff-stage-heading">
-              <span class="playoff-stage-number">2</span>
-              <div><h3>Final</h3><p>Los ganadores de las semifinales disputan el título.</p></div>
+
+          <div class="playoff-stage-column">
+            <div class="playoff-stage playoff-stage-third-place">
+              <div class="playoff-stage-heading">
+                <span class="playoff-stage-number">2</span>
+                <div><h3>3.er y 4.º lugar</h3><p>Los equipos que no avanzan a la final disputan el tercer puesto.</p></div>
+              </div>
+              <div id="thirdPlaceContainer" class="playoff-match-list" aria-live="polite"></div>
             </div>
-            <div id="finalContainer" class="playoff-match-list" aria-live="polite"></div>
+
+            <div class="playoff-stage playoff-stage-final">
+              <div class="playoff-stage-heading">
+                <span class="playoff-stage-number">3</span>
+                <div><h3>Final</h3><p>Los ganadores de las semifinales disputan el título.</p></div>
+              </div>
+              <div id="finalContainer" class="playoff-match-list" aria-live="polite"></div>
+            </div>
           </div>
-          <div class="playoff-stage playoff-stage-third-place">
+
+          <div class="playoff-stage playoff-stage-winner">
             <div class="playoff-stage-heading">
-              <span class="playoff-stage-number">3</span>
-              <div><h3>3.er y 4.º lugar</h3><p>Los equipos que no avanzan a la final disputan el tercer puesto.</p></div>
+              <span class="playoff-stage-number">4</span>
+              <div><h3>Ganador de la final</h3><p>Equipo campeón del torneo.</p></div>
             </div>
-            <div id="thirdPlaceContainer" class="playoff-match-list" aria-live="polite"></div>
+            <div id="winnerContainer" class="playoff-winner-container" aria-live="polite"></div>
           </div>
         </div>
         <p id="playoffsNote" class="playoffs-note"></p>
@@ -252,6 +263,6 @@
     <p>Comunidad de Básquetbol del Rímac</p>
   </footer>
 
-  <script src="/app.js?v=20260723-playoffs"></script>
+  <script src="/app.js?v=20260723-playoffs-winner"></script>
 </body>
 </html>
