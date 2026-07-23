@@ -630,48 +630,55 @@ function semifinalWinner(match) {
 }
 
 async function loadPlayoffs() {
+  const section = document.getElementById('fases-finales');
+  const menuLink = document.getElementById('playoffsMenuLink');
   const semifinalContainer = document.getElementById('semifinalContainer');
   const finalContainer = document.getElementById('finalContainer');
+  const thirdPlaceContainer = document.getElementById('thirdPlaceContainer');
   const note = document.getElementById('playoffsNote');
-  if (!semifinalContainer || !finalContainer) return;
+  if (!section || !semifinalContainer || !finalContainer || !thirdPlaceContainer) return;
+
+  const setPlayoffsVisibility = (visible) => {
+    section.hidden = !visible;
+    if (menuLink) menuLink.hidden = !visible;
+  };
+
+  setPlayoffsVisibility(false);
 
   try {
-    const [matches, standings, teams] = await Promise.all([
-      api(`/api/matches?championship_id=${getChampionshipId()}`),
-      api(`/api/standings?championship_id=${getChampionshipId()}`),
-      api(`/api/teams?championship_id=${getChampionshipId()}`)
-    ]);
-    const teamsByName = new Map((teams || []).map(team => [String(team.name || '').trim().toLowerCase(), team]));
-    const qualified = (standings || []).slice(0, 4).map(row => teamsByName.get(String(row.team_name || '').trim().toLowerCase()) || { id: row.team_id, name: row.team_name, logo_url: row.logo_url });
-    const semifinals = sortMatchesByDateDescTimeAsc((matches || []).filter(match => normalizeMatchPhase(match) === 'SEMIFINAL')).reverse();
-    const finals = sortMatchesByDateDescTimeAsc((matches || []).filter(match => normalizeMatchPhase(match) === 'FINAL')).reverse();
+    const matches = await api(`/api/matches?championship_id=${getChampionshipId()}`);
+    const hasTeams = match => Boolean(match?.home_team_id && match?.away_team_id);
+    const semifinals = sortMatchesByDateDescTimeAsc((matches || []).filter(match => normalizeMatchPhase(match) === 'SEMIFINAL' && hasTeams(match))).reverse();
+    const finals = sortMatchesByDateDescTimeAsc((matches || []).filter(match => normalizeMatchPhase(match) === 'FINAL' && hasTeams(match))).reverse();
+    const thirdPlaceMatches = sortMatchesByDateDescTimeAsc((matches || []).filter(match => normalizeMatchPhase(match) === 'THIRD_PLACE' && hasTeams(match))).reverse();
 
-    if (semifinals.length) {
-      semifinalContainer.innerHTML = semifinals.slice(0, 2).map((match, index) => playoffMatchCard(match, `Semifinal ${index + 1}`)).join('');
-      if (note) note.textContent = 'Las llaves se muestran con los partidos registrados como SEMIFINAL y FINAL.';
-    } else if (qualified.length >= 4) {
-      semifinalContainer.innerHTML = [
-        projectedPlayoffMatch(qualified[0], qualified[3], 'Semifinal 1', ['1.º', '4.º']),
-        projectedPlayoffMatch(qualified[1], qualified[2], 'Semifinal 2', ['2.º', '3.º'])
-      ].join('');
-      if (note) note.textContent = 'Clasificación provisional: 1.º vs 4.º y 2.º vs 3.º según la tabla de posiciones.';
-    } else {
-      semifinalContainer.innerHTML = '<p class="playoff-empty">Aún no hay cuatro equipos clasificados ni partidos de semifinal registrados.</p>';
+    const hasPlayoffTeams = semifinals.length > 0 || finals.length > 0 || thirdPlaceMatches.length > 0;
+    if (!hasPlayoffTeams) {
+      semifinalContainer.innerHTML = '';
+      finalContainer.innerHTML = '';
+      thirdPlaceContainer.innerHTML = '';
+      if (note) note.textContent = '';
+      return;
     }
 
-    if (finals.length) {
-      finalContainer.innerHTML = finals.slice(0, 1).map(match => playoffMatchCard(match, 'Gran Final')).join('');
-    } else {
-      const winners = semifinals.slice(0, 2).map(semifinalWinner);
-      if (winners.length === 2 && winners.every(Boolean)) {
-        finalContainer.innerHTML = projectedPlayoffMatch(winners[0], winners[1], 'Gran Final');
-      } else {
-        finalContainer.innerHTML = projectedPlayoffMatch(null, null, 'Gran Final');
-      }
-    }
+    setPlayoffsVisibility(true);
+
+    semifinalContainer.innerHTML = semifinals.length
+      ? semifinals.slice(0, 2).map((match, index) => playoffMatchCard(match, `Semifinal ${index + 1}`)).join('')
+      : '<p class="playoff-empty">La semifinal aún no tiene equipos registrados.</p>';
+
+    finalContainer.innerHTML = finals.length
+      ? finals.slice(0, 1).map(match => playoffMatchCard(match, 'Gran Final')).join('')
+      : '<p class="playoff-empty">La final aún no tiene equipos registrados.</p>';
+
+    thirdPlaceContainer.innerHTML = thirdPlaceMatches.length
+      ? thirdPlaceMatches.slice(0, 1).map(match => playoffMatchCard(match, '3.er y 4.º lugar')).join('')
+      : '<p class="playoff-empty">El partido por el 3.er y 4.º lugar aún no tiene equipos registrados.</p>';
+
+    if (note) note.textContent = 'Se muestran únicamente los partidos de fases finales que tienen ambos equipos registrados.';
   } catch (error) {
-    showError('semifinalContainer', error);
-    finalContainer.innerHTML = '<p class="playoff-empty">No fue posible cargar la final.</p>';
+    setPlayoffsVisibility(false);
+    console.error('No fue posible cargar las fases finales:', error);
   }
 }
 
@@ -1046,7 +1053,7 @@ const MAINTENANCE_TABLES = {
       { name: 'championship_id', label: 'Torneo', type: 'championship', required: true },
       { name: 'home_team_id', label: 'Equipo local', type: 'team', required: true },
       { name: 'away_team_id', label: 'Equipo visitante', type: 'team', required: true },
-      { name: 'phase', label: 'Fase', type: 'select', options: ['REGULAR', 'SEMIFINAL', 'FINAL'], required: true },
+      { name: 'phase', label: 'Fase', type: 'select', options: ['REGULAR', 'SEMIFINAL', 'FINAL', 'THIRD_PLACE'], required: true },
       { name: 'match_date', label: 'Fecha', type: 'date', required: true },
       { name: 'match_time', label: 'Hora', type: 'time' },
       { name: 'venue', label: 'Ubicación', type: 'text' },

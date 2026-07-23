@@ -7,7 +7,7 @@ DROP CONSTRAINT IF EXISTS chk_match_phase;
 
 ALTER TABLE matches
 ADD CONSTRAINT chk_match_phase
-CHECK (phase IN ('REGULAR', 'SEMIFINAL', 'FINAL'));
+CHECK (phase IN ('REGULAR', 'SEMIFINAL', 'FINAL', 'THIRD_PLACE'));
 
 CREATE INDEX IF NOT EXISTS idx_matches_championship_phase
 ON matches (championship_id, phase);

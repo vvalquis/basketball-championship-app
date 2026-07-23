@@ -2413,7 +2413,7 @@ body:not(.is-authenticated) .main-nav .admin-menu-link {
 /* ===== Semifinal y Final ===== */
 .playoffs-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) auto minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 22px;
   align-items: center;
 }
@@ -2424,6 +2424,7 @@ body:not(.is-authenticated) .main-nav .admin-menu-link {
   background: linear-gradient(145deg, rgba(255, 120, 0, .08), rgba(20, 20, 24, .65));
 }
 .playoff-stage-final { border-color: rgba(255, 182, 48, .42); }
+.playoff-stage-third-place { border-color: rgba(210, 210, 210, .28); }
 .playoff-stage-heading { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
 .playoff-stage-heading h3 { margin: 0 0 3px; }
 .playoff-stage-heading p { margin: 0; opacity: .75; font-size: .9rem; }
@@ -2451,7 +2452,7 @@ body:not(.is-authenticated) .main-nav .admin-menu-link {
 .playoff-score { font-size: 1.35rem; font-weight: 900; }
 .playoff-match-meta { justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; font-size: .82rem; opacity: .72; padding-top: 9px; }
 .playoff-match-card .detail-link-button { margin-top: 10px; }
-.playoff-connector { font-size: 2.1rem; color: #f36a00; }
+.playoff-connector { display: none; }
 .playoffs-note, .playoff-empty { margin: 14px 0 0; opacity: .72; }
 @media (max-width: 900px) {
   .playoffs-layout { grid-template-columns: 1fr; }

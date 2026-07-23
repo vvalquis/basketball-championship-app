@@ -45,7 +45,7 @@
     <a href="#inicio" class="menu-home-link" data-section-link="inicio">Inicio</a>
     <a href="#equipos" class="public-only" data-section-link="equipos">Equipos</a>
     <a href="#partidos" class="public-only" data-section-link="partidos">Partidos</a>
-    <a href="#fases-finales" class="public-only" data-section-link="fases-finales">Semifinal y Final</a>
+    <a href="#fases-finales" id="playoffsMenuLink" class="public-only" data-section-link="fases-finales" hidden>Semifinal y Final</a>
     <a href="#posiciones" class="public-only" data-section-link="posiciones">Posiciones</a>
     <a href="#stats" class="public-only" data-section-link="stats">Estadísticas</a>
     <a href="#jugadores" class="public-only" data-section-link="jugadores">Jugadores</a>
@@ -96,7 +96,7 @@
     </section>
 
 
-    <section id="fases-finales" class="section section-collapsible">
+    <section id="fases-finales" class="section section-collapsible" hidden>
       <div class="section-title-row">
         <div>
           <h2>Semifinal y Final</h2>
@@ -120,6 +120,13 @@
               <div><h3>Final</h3><p>Los ganadores de las semifinales disputan el título.</p></div>
             </div>
             <div id="finalContainer" class="playoff-match-list" aria-live="polite"></div>
+          </div>
+          <div class="playoff-stage playoff-stage-third-place">
+            <div class="playoff-stage-heading">
+              <span class="playoff-stage-number">3</span>
+              <div><h3>3.er y 4.º lugar</h3><p>Los equipos que no avanzan a la final disputan el tercer puesto.</p></div>
+            </div>
+            <div id="thirdPlaceContainer" class="playoff-match-list" aria-live="polite"></div>
           </div>
         </div>
         <p id="playoffsNote" class="playoffs-note"></p>

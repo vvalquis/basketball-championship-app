@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS matches (
     CONSTRAINT fk_matches_away_team FOREIGN KEY (away_team_id) REFERENCES teams(id),
     CONSTRAINT fk_matches_winner_team FOREIGN KEY (winner_team_id) REFERENCES teams(id),
     CONSTRAINT chk_different_teams CHECK (home_team_id <> away_team_id),
-    CONSTRAINT chk_match_phase CHECK (phase IN ('REGULAR', 'SEMIFINAL', 'FINAL')),
+    CONSTRAINT chk_match_phase CHECK (phase IN ('REGULAR', 'SEMIFINAL', 'FINAL', 'THIRD_PLACE')),
     CONSTRAINT chk_scores_positive CHECK (home_score >= 0 AND away_score >= 0)
 );
 

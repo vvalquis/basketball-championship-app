@@ -24,3 +24,11 @@ En **Mant. Partidos**, seleccionar la fase:
 Cuando no existen partidos marcados como `SEMIFINAL`, la pantalla proyecta las llaves con los cuatro primeros de la tabla: 1.º vs 4.º y 2.º vs 3.º.
 
 Cuando ambas semifinales terminan, la final puede mostrar automáticamente a los ganadores. Al registrar un partido con fase `FINAL`, ese partido pasa a ser la fuente principal de la sección final.
+
+
+## Partido por el 3.er y 4.º lugar
+Para registrar este enfrentamiento, crea un partido con la fase `THIRD_PLACE`.
+
+La sección de fases finales permanece oculta, incluido su enlace en el menú, mientras no exista al menos un partido de fase `SEMIFINAL`, `FINAL` o `THIRD_PLACE` con ambos equipos registrados.
+
+Ejecuta también `sql/migration_add_third_place_phase.sql` en Supabase antes de guardar partidos con esta nueva fase.
