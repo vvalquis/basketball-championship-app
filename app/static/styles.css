@@ -2529,3 +2529,23 @@ body:not(.is-authenticated) .main-nav .admin-menu-link {
 @media (max-width: 600px) {
   #summaryCards { grid-template-columns: 1fr; }
 }
+
+/* =========================================================
+   Título del campeonato con la misma tipografía del branding
+   ========================================================= */
+#selectedChampionshipTitle {
+  margin: 0;
+  font-family: inherit;
+  font-size: clamp(1rem, 1.7vw, 1.42rem);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -.04em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  #selectedChampionshipTitle {
+    font-size: .95rem;
+  }
+}
