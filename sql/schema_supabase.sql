@@ -127,7 +127,14 @@ SELECT
     COALESCE(SUM(CASE WHEN m.home_team_id = t.id THEN m.home_score WHEN m.away_team_id = t.id THEN m.away_score ELSE 0 END), 0) AS points_for,
     COALESCE(SUM(CASE WHEN m.home_team_id = t.id THEN m.away_score WHEN m.away_team_id = t.id THEN m.home_score ELSE 0 END), 0) AS points_against,
     COALESCE(SUM(CASE WHEN m.home_team_id = t.id THEN m.home_score - m.away_score WHEN m.away_team_id = t.id THEN m.away_score - m.home_score ELSE 0 END), 0) AS point_difference,
-    COALESCE(SUM(CASE WHEN m.winner_team_id = t.id THEN 2 WHEN m.status = 'FINISHED' THEN 1 ELSE 0 END), 0) AS championship_points
+    COALESCE(SUM(CASE
+        WHEN m.id IS NULL THEN 0
+        WHEN (m.home_team_id = t.id AND COALESCE(m.home_score, 0) = 0)
+          OR (m.away_team_id = t.id AND COALESCE(m.away_score, 0) = 0) THEN 0
+        WHEN m.winner_team_id = t.id THEN 2
+        WHEN m.status = 'FINISHED' THEN 1
+        ELSE 0
+    END), 0) AS championship_points
 FROM teams t
 LEFT JOIN matches m ON m.status = 'FINISHED'
     AND COALESCE(m.phase, 'REGULAR') = 'REGULAR'

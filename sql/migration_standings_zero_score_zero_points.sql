@@ -1,6 +1,7 @@
 -- Ejecutar una sola vez en el SQL Editor de Supabase.
--- Reconstruye la tabla de posiciones para contabilizar únicamente
--- partidos FINALIZADOS cuya fase sea REGULAR.
+-- Ajusta la tabla de posiciones para que un equipo que termine un partido
+-- de fase REGULAR con 0 puntos obtenga 0 puntos de campeonato.
+-- Regla: ganador = 2 pts; perdedor = 1 pt; equipo con marcador 0 = 0 pts.
 
 DROP VIEW IF EXISTS standings_view;
 
